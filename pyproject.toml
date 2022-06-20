@@ -11,6 +11,7 @@ Flask = "^2.1.2"
 prometheus-client = "^0.14.1"
 python-ldap = {version = "^3.4.0", optional = true}
 ipaclient = {version = "^4.8.9", optional = true}
+gunicorn = "^20.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"

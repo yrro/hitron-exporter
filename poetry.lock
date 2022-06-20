@@ -143,6 +143,20 @@ python-versions = ">=3.6"
 decorator = "*"
 
 [[package]]
+name = "gunicorn"
+version = "20.1.0"
+description = "WSGI HTTP Server for UNIX"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[package.extras]
+eventlet = ["eventlet (>=0.24.1)"]
+gevent = ["gevent (>=1.4.0)"]
+setproctitle = ["setproctitle"]
+tornado = ["tornado (>=0.2)"]
+
+[[package]]
 name = "idna"
 version = "3.3"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -460,7 +474,7 @@ freeipa-vault = ["ipaclient", "python-ldap"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "1300dd8fd591ed47792602ae67588dbd4806ed8bc6128c5a619c9fb23129a1e5"
+content-hash = "64c0943781c2115ce4ac75bc5b9e23005ec3efadfb67a5be3003acd643700ca7"
 
 [metadata.files]
 black = [
@@ -612,6 +626,10 @@ gssapi = [
     {file = "gssapi-1.7.3-cp39-cp39-win32.whl", hash = "sha256:c65221f5bc91f1fa317b48866d1a6da6248195d5c58e743f6c512a80c7c98119"},
     {file = "gssapi-1.7.3-cp39-cp39-win_amd64.whl", hash = "sha256:8bb1603b24a1f21a0da19df9f2544c122af896b1f28a17b0d45cf87773de58c4"},
     {file = "gssapi-1.7.3.tar.gz", hash = "sha256:c69b9f633a0c03c1b84ba14c73b0ec132f6323056e675702c1a5f75f316e06fb"},
+]
+gunicorn = [
+    {file = "gunicorn-20.1.0-py3-none-any.whl", hash = "sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e"},
+    {file = "gunicorn-20.1.0.tar.gz", hash = "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
