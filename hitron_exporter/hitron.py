@@ -1,7 +1,11 @@
 from urllib.parse import urljoin
+from logging import getLogger
 import ssl
 
 import requests
+
+
+LOGGER = getLogger(__name__)
 
 
 class Client:
@@ -89,6 +93,9 @@ class Client:
 
     def __init__(self, address, fingerprint):
         self.__base_url = f'https://{address}/'
+
+        if not fingerprint:
+            LOGGER.warn('Communication with <%s> is insecure because the TLS server certificate fingerprint was not specified. Please see the README for instructions on how to obtain the certificate fingerprint.', self.__base_url)
 
         self.__session = requests.Session()
         self.__session.mount(self.__base_url, HitronHTTPAdapter(fingerprint))
