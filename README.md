@@ -1,7 +1,6 @@
 # hitron exporter
 
-A [Prometheus](https://prometheus.io/) exporter for the Hitron CGNV4 cable
-modem.
+A [Prometheus](https://prometheus.io/) exporter for the Hitron CGN series CPE.
 
 Tested with my CGNV4-FX4 as provided by [Virgin Media
 business](https://www.virginmediabusiness.co.uk/help-and-advice/products-and-services/hitron-router-guide/).
