@@ -23,7 +23,13 @@ def metrics():
 def probe():
     global ipavault_credentials
     args = flask.request.args
-    client = hitron.Client(args['address'], args.get('fingerprint'))
+
+    try:
+        address = args['address']
+    except KeyError:
+        return "Missing parameter: 'address'", 400
+    client = hitron.Client(address, args.get('fingerprint'))
+
     if args.get('usr') and args.get('pwd'):
         client.login(args.get('usr'), args.get('pwd'))
     elif args.get('ipa_vault_namespace'):
@@ -35,7 +41,7 @@ def probe():
             ipavault_credentials = None
             raise
     else:
-        return ('Credentials not provided', 400)
+        return "Missing parameters: 'usr', 'pwd' or 'ipa_vault_namespace'", 400
 
     try:
         reg = prometheus_client.CollectorRegistry()
