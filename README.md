@@ -116,26 +116,32 @@ hitron_cm_bpi_info{auth="authorized",tek="operational"} 1.0
 
 ## How to run
 
-You need [Poetry](https://python-poetry.org/) which will take care of creating
-a venv, installing dependencies, etc.
+If you're into containers:
+
+```
+$ podman run --name hitron-exporter --replace --host=net ghcr.io/yrro/hitron-exporter:latest
+```
+
+If you're not into containers, you need [Poetry](https://python-poetry.org/)
+which will take care of creating a venv, installing dependencies, etc.
 
 ```
 $ poetry install
+
+$ poetry run gunicorn -b 0.0.0.0:9938 hitron_exporter:app
 ```
 
-Run the exporter:
+Once the exporter is running, use an HTTP client such as
+[HTTPia](https://httpie.io/) to probe for metrics:
 
 ```
-$ poetry run gunicorn -b 0.0.0.0:9938 hitron_exporter:app 
+$ http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2
 ```
 
-Probe for metrics:
+Or you can use your web browser by visiting
+<http://localhost:9938/probe?address=192.2.0.1&usr=admin&pwd=hunter2>.
 
-```
-$ poetry run http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2
-```
-
-### Transport security
+## Transport security
 
 HTTPS is used to protect the confidentiality and integrity of communictions
 with the cable modem, however the modem's TLS server certificate can't be
@@ -151,16 +157,16 @@ $ <<< Q openssl s_client -showcerts -connect 192.2.0.1:443 | openssl x509 -noout
 sha256 Fingerprint=A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
-Now you can probe for metrics like this:
+Now you can provide `fingerprint` when you probe for metrics like this:
 
 ```
-$ poetry run http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
+$ http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
-If a person-in-the-middle interposes themselves between the exporter and the
-cable modem, the exporter will refuse to connect.
+If an attacker interposes themselves between the exporter and the cable modem,
+the exporter will refuse to connect.
 
-### Credential security
+## Credential security
 
 Passing credentials to programs on the command line is not best practice. If
 you use [FreeIPA](https://www.freeipa.org/) then you have the option of storing
@@ -172,15 +178,17 @@ This requires a few extra libraries which are installed when you run:
 $ poetry install -E freeipa-vault
 ```
 
-We need to create the following objects:
+(These are included in the container image by default).
+
+Create the following objects in the FreeIPA directory:
 
  * A host that acts as the cable modem's identity: `host/cm-hitron.example.com`
  * A `usr` vault that stores the username
  * A `pwd` vault that stores the password
  * A service that acts as `hitron-exporter`'s identity: `HTTP/hitron-exporter.example.com`
 
-Then we need to grant the `hitron-exporter` service permission to read the
-cable modem's vaults.
+Then grant `HTTP/hitron-exporter.example.com` permission to read the cable
+modem's vaults.
 
 ```
 $ ipa host-add cm-hitron.example.com --force
@@ -200,14 +208,14 @@ $ ipa vault-add-member usr --service=host/cm-hitron.example.com --services=HTTP/
 $ ipa vault-add-member pwd --service=host/cm-hitron.example.com --services=HTTP/hitron-exporter.example.com
 ```
 
-Finally, we need to create a *keytab* which stores the key that allows
-`hitron-exporter` to authenticate to the FreeIPA servers.
+Finally, create a *keytab* which the exporter will use to authenticate to the
+FreeIPA servers.
 
 ```
 $ ipa-getkeytab -p HTTP/hitron-exporter.example.com -k /tmp/hitron-exporter.keytab
 ```
 
-Now, we're ready to run the exporter...
+We're finally ready to run the exporter...
 
 ```
 $ KRB5_CLIENT_KTNAME=/tmp/hitron-exporter.keytab KRB5CCNAME=MEMORY: poetry run gunicorn -b 0.0.0.0:9938 hitron_exporter:app
@@ -226,58 +234,6 @@ messages logged, check:
  * `KRB5_CLIENT_KTNAME` is set correctly
  * The keytab is readable: print its contents with
   `klist -k /tmp/hitron-exporter.keytab`
-
-## How to develop
-
-Run a development web server:
-
-```
-$ FLASK_DEBUG=1 FLASK_APP=hitron_exporter:app poetry run flask run
-```
-
-Probe for metrics:
-
-```
-$ poetry run http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
-```
-
-## Container images
-
-You need [source-to-image](https://github.com/openshift/source-to-image).
-
-To build using [Docker](https://www.docker.com/):
-
-```
-$ s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter
-```
-
-To build using [Podman](https://podman.io/):
-
-```
-$ rm -rf /tmp/hitron-exporter-docker-context \
-    && mkdir /tmp/hitron-exporter-docker-context
-    && s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter --as-dockerfile /tmp/hitron-exporter-docker-context/Dockerfile \
-    && podman build /tmp/hitron-exporter-docker-context -t hitron-exporter:latest
-```
-
-To run the container image (with Podman, but Docker should work pretty much the
-same):
-
-```
-$ podman run --name hitron-exporter --net=host --rm --replace hitron-exporter:latest
-```
-
-### Using your own Gunicorn settings
-
-[Gunicorn settings](https://docs.gunicorn.org/en/latest/settings.html) can be
-specified via the `GUNICORN_CMD_ARGS` environment variable. When doing so, it's
-important to include the default arguments because they will be replaced by
-whatever you specify. For example, you can use the following command, replacing
-`...` with your preferred Gunicorn settings.
-
-```
-$ podman run --name hitron-exporter --net=host --rm --replace --env GUNICORN_CMD_ARGS='--bind=0.0.0.0:9938 --access-logfile=- ...' hitron-exporter:latest
-```
 
 ### Pulling credentials from FreeIPA in a container
 
@@ -304,6 +260,50 @@ For example:
 
 ```
 $ podman run -v /etc/ipa:/etc/ipa -v /etc/hitron-exporter.keytab:/etc/hitron-exporter.keytab --env KRB5CCNAME=MEMORY: --env KRB5_TRACE=/dev/stderr --env KRB5_CLIENT_KTNAME=/etc/hitron-exporter.keytab --net=host --name hitron-exporter --replace --rm hitron-exporter:latest
+```
+
+## Using your own Gunicorn settings in a container
+
+[Gunicorn settings](https://docs.gunicorn.org/en/latest/settings.html) can be
+specified via the `GUNICORN_CMD_ARGS` environment variable. This will override
+the default settings baked into the container image, so you shoudl use the
+following command, replacing `...` with your preferred settings.
+
+```
+$ podman run --name hitron-exporter --net=host --rm --replace --env GUNICORN_CMD_ARGS='--bind=0.0.0.0:9938 --access-logfile=- ...' ghcr.io/yrro/hitron-exporter:latest
+```
+
+## How to develop
+
+Run a development web server:
+
+```
+$ FLASK_DEBUG=1 FLASK_APP=hitron_exporter:app poetry run flask run
+```
+
+Probe for metrics:
+
+```
+$ poetry run http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
+```
+
+## Building the container image
+
+You need [source-to-image](https://github.com/openshift/source-to-image).
+
+To build using [Docker](https://www.docker.com/):
+
+```
+$ s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter
+```
+
+To build using [Podman](https://podman.io/):
+
+```
+$ rm -rf /tmp/hitron-exporter-docker-context \
+    && mkdir /tmp/hitron-exporter-docker-context
+    && s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter --as-dockerfile /tmp/hitron-exporter-docker-context/Dockerfile \
+    && podman build /tmp/hitron-exporter-docker-context -t ghcr.io/yrro/hitron-exporter:latest
 ```
 
 ## Alternatives
