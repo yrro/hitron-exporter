@@ -27,7 +27,6 @@ def retrieve(vault_namespace):
 
 
 def check_keytab_readable():
-    breakpoint()
     if 'KRB5_CLIENT_KTNAME' not in os.environ:
         return
 
