@@ -311,5 +311,12 @@ $ rm -rf /tmp/hitron-exporter-docker-context \
 
 ## Alternatives
 
-[cfstras/hitron-exporter](https://github.com/cfstras/hitron-exporter) is written in Go.
+[cfstras/hitron-exporter](https://github.com/cfstras/hitron-exporter), is
+another Prometheus exporter for Hitron CGNV4 CPE devices. It's written in Go.
+
+[tcpipuk/Hitron](https://github.com/tcpipuk/Hitron), a Python module for
+interacting with Hitron CGNV4 CPE devices, has some code that makes sense of
+the DOCSIS and GRE status data. I might use it to create stateset/enum metrics
+for monitoring the status of these connections.
+
 
