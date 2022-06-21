@@ -137,7 +137,7 @@ $ poetry run gunicorn -b 0.0.0.0:9938 hitron_exporter:app
 ```
 
 Once the exporter is running, use an HTTP client such as
-[HTTPia](https://httpie.io/) to probe for metrics:
+[HTTPie](https://httpie.io/) to probe for metrics:
 
 ```
 $ http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2
