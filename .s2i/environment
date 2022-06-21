@@ -1,0 +1,3 @@
+ENABLE_MICROPIPENV=1
+APP_MODULE=hitron_exporter:app
+PORT=9938
