@@ -1,6 +1,9 @@
-from urllib.parse import urljoin
+import binascii
+import hashlib
 from logging import getLogger
 import ssl
+import socket
+from urllib.parse import urljoin
 
 import requests
 
@@ -95,7 +98,8 @@ class Client:
         self.__base_url = f'https://{address}/'
 
         if not fingerprint:
-            LOGGER.warn('Communication with <%s> is insecure because the TLS server certificate fingerprint was not specified. Please see the README for instructions on how to obtain the certificate fingerprint.', self.__base_url)
+            LOGGER.warn('Communication with <%s> is insecure because the TLS server certificate fingerprint was not specified.', address)
+            LOGGER.warn('Fingerprint of <%s> is %s', address, get_server_certificate_fingerprint((address, 443), timeout=5))
 
         self.__session = requests.Session()
         self.__session.mount(self.__base_url, HitronHTTPAdapter(fingerprint))
@@ -133,6 +137,19 @@ class Client:
         r.raise_for_status()
 
 
+# We can't use ssl.get_server_certificate because it harcodes an SSLContext
+# that is not lenient enough.
+def get_server_certificate_fingerprint(addr, timeout=ssl._GLOBAL_DEFAULT_TIMEOUT):
+    ctx = HitronHTTPAdapter.create_context()
+    ctx.verify_mode = ssl.CERT_NONE
+    with socket.create_connection(addr, timeout=timeout) as sock:
+        with ctx.wrap_socket(sock) as sslsock:
+            crt = sslsock.getpeercert(True)
+            digest = hashlib.sha256(crt).digest()
+            return binascii.hexlify(digest, ':').decode('ascii')
+
+
+
 class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
     '''
     Relaxes potential default OpenSSL configuration to allow communication with
@@ -148,11 +165,18 @@ class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
 
     def __init__(self, fingerprint, **kwargs):
         self.__fingerprint = fingerprint
-        self.__context = ssl.create_default_context()
-        self.__context.check_hostname = False
-        self.__context.set_ciphers('DEFAULT@SECLEVEL=1')
+        self.__context = HitronHTTPAdapter.create_context()
 
         super().__init__(**kwargs)
+
+
+    @classmethod
+    def create_context(klass):
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.set_ciphers('DEFAULT@SECLEVEL=1')
+        return ctx
+
 
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = requests.packages.urllib3.poolmanager.PoolManager(

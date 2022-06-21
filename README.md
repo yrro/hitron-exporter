@@ -143,27 +143,25 @@ Or you can use your web browser by visiting
 ## Transport security
 
 HTTPS is used to protect the confidentiality and integrity of communictions
-with the cable modem, however the modem's TLS server certificate can't be
+with the CPU device, however the modem's TLS server certificate can't be
 verified in the usual way.
 
 We can work around this by telling the exporter to check the fingerprint of the
 TLS server certificate against a known good fingerprint.
 
-To obtain the fingerprint of the TLS server certificate:
+When you probe for metrics without providing a `fingerprint` parameter, the
+exporter will log the fingerprint of the TLS server certificate that it
+recieves from the target.
 
-```
-$ <<< Q openssl s_client -showcerts -connect 192.2.0.1:443 | openssl x509 -noout -sha256 -fingerprint 
-sha256 Fingerprint=A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
-```
-
-Now you can provide `fingerprint` when you probe for metrics like this:
+So all you need to do is take note of that log message, and then provide the
+fingerprint at probe time:
 
 ```
 $ http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
-If an attacker interposes themselves between the exporter and the cable modem,
-the exporter will refuse to connect.
+When a probe specifies `fingerprint`, the exporter will refuse to connect to
+connect to an attacker interposed between the exporter and the CPE device.
 
 ## Credential security
 
