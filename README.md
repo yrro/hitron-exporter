@@ -2,21 +2,27 @@
 
 A [Prometheus](https://prometheus.io/) exporter for the Hitron CGN series CPE.
 
+The Hitron CGN series CPE are a combination cable modem, Wi-Fi access points,
+Analog Telephone Adapter, router, firewall device.
+
 Tested with my CGNV4-FX4 as provided by [Virgin Media
 business](https://www.virginmediabusiness.co.uk/help-and-advice/products-and-services/hitron-router-guide/).
+
+If you've tried it with another model, [please let me
+know](mailto:sam@robots.org.uk). And, of course, pull requests are welcome!
 
 ## Features
 
 This exporter uses the [multi-target exporter
 pattern](https://prometheus.io/docs/guides/multi-target-exporter/), where the
-list of cable modems and parameters for probing them live in Prometheus's
-config file.
+list of CPE devices and parameters for probing them live in Prometheus's config
+file.
 
 Credentials can be stored securely in a [FreeIPA](https://www.freeipa.org/)
 vault. At some point I'll add the ability to retrieve them from a config file
 as well.
 
-Communcation with the cable modem is secured by TLS; the TLS server certificate
+Communcation with the CPE device is secured by TLS; the TLS server certificate
 fingerprint is checked against the value configured in Prometheus.
 
 Written in [Python](https://python.org/) (or is this an anti-feature?)
@@ -179,7 +185,7 @@ $ poetry install -E freeipa-vault
 
 Create the following objects in the FreeIPA directory:
 
- * A host that acts as the cable modem's identity: `host/cm-hitron.example.com`
+ * A host that acts as the CPE device's identity: `host/cm-hitron.example.com`
  * A `usr` vault that stores the username
  * A `pwd` vault that stores the password
  * A service that acts as `hitron-exporter`'s identity: `HTTP/hitron-exporter.example.com`
