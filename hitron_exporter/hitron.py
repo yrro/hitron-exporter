@@ -105,7 +105,7 @@ class Client:
         self.__session.mount(self.__base_url, HitronHTTPAdapter(fingerprint))
 
 
-    def login(self, usr, pwd):
+    def login(self, usr, pwd, force=False):
         r = self.__session.get(self.__base_url, allow_redirects=False, verify=False, timeout=2)
         r.raise_for_status()
         assert 'preSession' in self.__session.cookies
@@ -113,7 +113,7 @@ class Client:
         r = self.__session.post(urljoin(self.__base_url, 'goform/login'), allow_redirects=False, verify=False, timeout=10, data={
             'usr': usr,
             'pwd': pwd,
-            'forcelogoff': '0',
+            'forcelogoff': '0' if not force else '1',
             'preSession': self.__session.cookies['preSession'],
         })
         r.raise_for_status()

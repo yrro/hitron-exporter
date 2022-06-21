@@ -30,13 +30,15 @@ def probe():
         return "Missing parameter: 'address'", 400
     client = hitron.Client(address, args.get('fingerprint'))
 
+    force = bool(int(args.get('force', '0')))
+
     if args.get('usr') and args.get('pwd'):
-        client.login(args.get('usr'), args.get('pwd'))
+        client.login(args.get('usr'), args.get('pwd'), force)
     elif args.get('ipa_vault_namespace'):
         if ipavault_credentials is None:
             ipavault_credentials = ipavault.retrieve(args.get('ipa_vault_namespace').split(':'))
         try:
-            client.login(**ipavault_credentials)
+            client.login(**ipavault_credentials, force=force)
         except PermissionError:
             ipavault_credentials = None
             raise
