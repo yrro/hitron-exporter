@@ -1,3 +1,14 @@
+# micropipenv will install dependencies from poetry.lock
 ENABLE_MICROPIPENV=1
+
+# Since Gunicorn is installed, s2i-python-container will launch it, serving
+# this WSGI application:
 APP_MODULE=hitron_exporter:app
+
+# s2i-python-container examines the container's cpu and memory limits to
+# determine the number of workers to launch. We're not a high traffic web site,
+# so override this calculation.
+WEB_CONCURRENCY=1
+
+# Override the default port to the one registered for hitron-exporter
 PORT=9938
