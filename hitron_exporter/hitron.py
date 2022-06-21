@@ -139,7 +139,7 @@ class Client:
 
 # We can't use ssl.get_server_certificate because it harcodes an SSLContext
 # that is not lenient enough.
-def get_server_certificate_fingerprint(addr, timeout=ssl._GLOBAL_DEFAULT_TIMEOUT):
+def get_server_certificate_fingerprint(addr, timeout):
     ctx = HitronHTTPAdapter.create_context()
     ctx.verify_mode = ssl.CERT_NONE
     with socket.create_connection(addr, timeout=timeout) as sock:
