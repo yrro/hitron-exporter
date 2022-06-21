@@ -143,8 +143,8 @@ Once the exporter is running, use an HTTP client such as
 $ http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2
 ```
 
-Or you can use your web browser by visiting
-<http://localhost:9938/probe?address=192.2.0.1&usr=admin&pwd=hunter2>.
+If you don't have HTTPie installed, prepend `poetry run` to that command to use
+the copy installed by Poetry.
 
 ## Transport security
 
