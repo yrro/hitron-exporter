@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -eu -o pipefail
+
+# <https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys>
+#
+# <https://github.com/openshift/source-to-image/blob/master/docs/new_labels.md>
+mkdir /tmp/.s2i
+cat <<- EOF > /tmp/.s2i/image_metadata.json
+{
+  "labels": [
+    {"org.opencontainers.image.source": "https://github.com/yrro/hitron-exporter"}
+  ]
+}
+EOF
+
+exec /usr/libexec/s2i/assemble
