@@ -241,6 +241,71 @@ Probe for metrics:
 $ poetry run http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
+## Container images
+
+You need [source-to-image](https://github.com/openshift/source-to-image).
+
+To build using [Docker](https://www.docker.com/):
+
+```
+$ s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter
+```
+
+To build using [Podman](https://podman.io/):
+
+```
+$ rm -rf /tmp/hitron-exporter-docker-context \
+    && mkdir /tmp/hitron-exporter-docker-context
+    && s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter --as-dockerfile /tmp/hitron-exporter-docker-context/Dockerfile \
+    && podman build /tmp/hitron-exporter-docker-context -t hitron-exporter:latest
+```
+
+To run the container image (with Podman, but Docker should work pretty much the
+same):
+
+```
+$ podman run --name hitron-exporter --net=host --rm --replace hitron-exporter:latest
+```
+
+### Using your own Gunicorn settings
+
+[Gunicorn settings](https://docs.gunicorn.org/en/latest/settings.html) can be
+specified via the `GUNICORN_CMD_ARGS` environment variable. When doing so, it's
+important to include the default arguments because they will be replaced by
+whatever you specify. For example, you can use the following command, replacing
+`...` with your preferred Gunicorn settings.
+
+```
+$ podman run --name hitron-exporter --net=host --rm --replace --env GUNICORN_CMD_ARGS='--bind=0.0.0.0:9938 --access-logfile=- ...' hitron-exporter:latest
+```
+
+### Pulling credentials from FreeIPA in a container
+
+Here's what's needed:
+
+ * Mount `/etc/ipa` from the host inside the guest
+ * Mount the keytab from the host inside the guest
+ * Set `KRB5_CLIENT_KTNAME` to point to the keytab inside the container
+
+Make sure the keytab file is readable inside the container; MIT Kerberos
+
+In addition, I recommend:
+
+ * Set `KRB5CCNAME=MEMORY:` since there's no reason to share a credentials
+   cache between multiple processes; with the default value I get an exception
+   thrown:
+  `ipalib.errors.KerberosError: Major (851968): Unspecified GSS failure.  Minor code may provide more information, Minor (1): Operation not permitted`
+ * Set `KRB5_TRACE=/dev/stderr` while debugging and read the log messages
+ * If there are no Kerberos-related log messages, check `KRB5_CLIENT_KTNAME` is
+   readable from within the container; confirm with
+   `podman exec hitron-exporter hexdump -C $KRB5_CLIENT_KTNAME`
+
+For example:
+
+```
+$ podman run -v /etc/ipa:/etc/ipa -v /etc/hitron-exporter.keytab:/etc/hitron-exporter.keytab --env KRB5CCNAME=MEMORY: --env KRB5_TRACE=/dev/stderr --env KRB5_CLIENT_KTNAME=/etc/hitron-exporter.keytab --net=host --name hitron-exporter --replace --rm hitron-exporter:latest
+```
+
 ## Alternatives
 
 [cfstras/hitron-exporter](https://github.com/cfstras/hitron-exporter) is written in Go.
