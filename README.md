@@ -219,6 +219,14 @@ $ KRB5_CLIENT_KTNAME=/tmp/hitron-exporter.keytab KRB5CCNAME=MEMORY: poetry run g
 $ poetry run http localhost:9938/probe address==192.2.0.1 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
+To debug, try setting the environment variable `KRB5_TRACE=/dev/stderr` and
+reading the log messages produced. If there aren't any Kerberos-related
+messages logged, check:
+
+ * `KRB5_CLIENT_KTNAME` is set correctly
+ * The keytab is readable: print its contents with
+  `klist -k /tmp/hitron-exporter.keytab`
+
 ## How to develop
 
 Run a development web server:
