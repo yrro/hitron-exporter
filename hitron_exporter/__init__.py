@@ -1,3 +1,4 @@
+import datetime
 from logging import getLogger
 import re
 
@@ -100,13 +101,10 @@ class Collector:
 
     
     def collect_uptime(self):
-        uptime = prometheus_client.core.CounterMetricFamily('hitron_system_uptime_seconds_total', '')
-
         m = re.match(r'(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds', self.__sysinfo[0]['systemUptime'])
         if m:
-            uptime.add_metric([], 86400 * int(m.group(1)) + 3660 * int(m.group(2)) + 60 * int(m.group(3)) + m.group(4))
-
-        yield uptime
+            td = datetime.timedelta(days=int(m.group(1)), hours=int(m.group(2)), minutes=int(m.group(3)), seconds=int(m.group(4)))
+            yield prometheus_client.core.CounterMetricFamily('hitron_system_uptime_seconds_total', '', value=td.total_seconds())
 
 
     def collect_network(self):
