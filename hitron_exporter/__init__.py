@@ -93,35 +93,37 @@ class Collector:
 
     
     def collect_sysinfo(self):
+        uptime = prometheus_client.core.CounterMetricFamily('hitron_system_uptime_seconds_total', '')
+
         m = re.match(r'(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds', self.__sysinfo[0]['systemUptime'])
         if m:
-            uptime = prometheus_client.core.CounterMetricFamily('hitron_system_uptime_seconds_total', '')
             uptime.add_metric([], 86400 * int(m.group(1)) + 3660 * int(m.group(2)) + int(m.group(3)))
-            yield uptime
+
+        yield uptime
+
+        nw_tx = prometheus_client.core.CounterMetricFamily('hitron_network_transmit_bytes', '', labels=['device'])
 
         m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['LSendPkt'])
         if m:
-            lsend = prometheus_client.core.CounterMetricFamily('hitron_traffic_lan_sent_bytes', '')
-            lsend.add_metric([], 10e6 * float(m.group(1)))
-            yield lsend
-
-        m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['LRecPkt'])
-        if m:
-            lrec = prometheus_client.core.CounterMetricFamily('hitron_traffic_lan_recv_bytes', '')
-            lrec.add_metric([], 10e6 * float(m.group(1)))
-            yield lrec
+            nw_tx.add_metric(['lan'], 10e6 * float(m.group(1)))
 
         m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['WSendPkt'])
         if m:
-            wsend = prometheus_client.core.CounterMetricFamily('hitron_traffic_wan_sent_bytes', '')
-            wsend.add_metric([], 10e6 * float(m.group(1)))
-            yield wsend
+            nw_tx.add_metric(['wan'], 10e6 * float(m.group(1)))
+
+        yield nw_tx
+
+        nw_rx = prometheus_client.core.CounterMetricFamily('hitron_network_receive_bytes', '', labels=['device'])
+
+        m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['LRecPkt'])
+        if m:
+            nw_rx.add_metric(['lan'], 10e6 * float(m.group(1)))
 
         m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['WRecPkt'])
         if m:
-            wrec = prometheus_client.core.CounterMetricFamily('hitron_traffic_wan_recv_bytes', '')
-            wrec.add_metric([], 10e6 * float(m.group(1)))
-            yield wrec
+            nw_rx.add_metric(['wan'], 10e6 * float(m.group(1)))
+
+        yield nw_rx
 
         yield prometheus_client.core.InfoMetricFamily('hitron_system', '', value={
             'serial_number': self.__sysinfo[0]['serialNumber'],
