@@ -105,11 +105,11 @@ class Collector:
 
         m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['LSendPkt'])
         if m:
-            nw_tx.add_metric(['lan'], 10e6 * float(m.group(1)))
+            nw_tx.add_metric(['lan'], 1e6 * float(m.group(1)))
 
         m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['WSendPkt'])
         if m:
-            nw_tx.add_metric(['wan'], 10e6 * float(m.group(1)))
+            nw_tx.add_metric(['wan'], 1e6 * float(m.group(1)))
 
         yield nw_tx
 
@@ -117,11 +117,11 @@ class Collector:
 
         m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['LRecPkt'])
         if m:
-            nw_rx.add_metric(['lan'], 10e6 * float(m.group(1)))
+            nw_rx.add_metric(['lan'], 1e6 * float(m.group(1)))
 
         m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['WRecPkt'])
         if m:
-            nw_rx.add_metric(['wan'], 10e6 * float(m.group(1)))
+            nw_rx.add_metric(['wan'], 1e6 * float(m.group(1)))
 
         yield nw_rx
 
