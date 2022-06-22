@@ -64,7 +64,10 @@ class Collector:
     def collect(self):
         yield from self.collect_usinfo()
         yield from self.collect_dsinfo()
+        yield from self.collect_uptime()
+        yield from self.collect_network()
         yield from self.collect_sysinfo()
+        yield from self.collect_docsis()
 
     def collect_usinfo(self):
         usinfo_sigstr = prometheus_client.core.GaugeMetricFamily('hitron_channel_upstream_signal_strength_dbmv', '', labels=['port', 'channel', 'frequency'])
@@ -92,7 +95,7 @@ class Collector:
         yield dsinfo_snr
 
     
-    def collect_sysinfo(self):
+    def collect_uptime(self):
         uptime = prometheus_client.core.CounterMetricFamily('hitron_system_uptime_seconds_total', '')
 
         m = re.match(r'(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds', self.__sysinfo[0]['systemUptime'])
@@ -101,6 +104,8 @@ class Collector:
 
         yield uptime
 
+
+    def collect_network(self):
         nw_tx = prometheus_client.core.CounterMetricFamily('hitron_network_transmit_bytes', '', labels=['device'])
 
         m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['LSendPkt'])
@@ -125,6 +130,8 @@ class Collector:
 
         yield nw_rx
 
+
+    def collect_sysinfo(self):
         yield prometheus_client.core.InfoMetricFamily('hitron_system', '', value={
             'serial_number': self.__sysinfo[0]['serialNumber'],
             'software_version': self.__sysinfo[0]['swVersion'],
@@ -132,6 +139,8 @@ class Collector:
             'model_name': self.__system_model['modelName'],
         })
 
+
+    def collect_docsis(self):
         bpi = {}
         for element in self.__cminit[0]['bpiStatus'].split(','):
             k, _, v = element.strip().partition(':')
