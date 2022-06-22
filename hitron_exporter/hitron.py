@@ -94,12 +94,12 @@ class Client:
     # [{'tunefreq': '426.250'}]
 
 
-    def __init__(self, address, fingerprint):
-        self.__base_url = f'https://{address}/'
+    def __init__(self, host, fingerprint):
+        self.__base_url = f'https://{host}/'
 
         if not fingerprint:
-            LOGGER.warn('Communication with <%s> is insecure because the TLS server certificate fingerprint was not specified.', address)
-            LOGGER.warn('Fingerprint of <%s> is %s', address, get_server_certificate_fingerprint((address, 443), timeout=5))
+            LOGGER.warn('Communication with <%s> is insecure because the TLS server certificate fingerprint was not specified.', host)
+            LOGGER.warn('Fingerprint of <%s> is %s', host, get_server_certificate_fingerprint((host, 443), timeout=5))
 
         self.__session = requests.Session()
         self.__session.mount(self.__base_url, HitronHTTPAdapter(fingerprint))

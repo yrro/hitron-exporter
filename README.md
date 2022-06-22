@@ -140,7 +140,7 @@ Once the exporter is running, use an HTTP client such as
 [HTTPie](https://httpie.io/) to probe for metrics:
 
 ```
-$ http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2
+$ http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2
 ```
 
 If you don't have HTTPie installed, prepend `poetry run` to that command to use
@@ -163,7 +163,7 @@ So all you need to do is take note of that log message, and then provide the
 fingerprint at probe time:
 
 ```
-$ http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
+$ http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
 When a probe specifies `fingerprint`, the exporter will refuse to connect to
@@ -227,7 +227,7 @@ $ KRB5_CLIENT_KTNAME=/tmp/hitron-exporter.keytab KRB5CCNAME=MEMORY: poetry run g
 ... and test it:
 
 ```
-$ poetry run http localhost:9938/probe address==192.2.0.1 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
+$ poetry run http localhost:9938/probe target==192.2.0.1 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
 To debug, try setting the environment variable `KRB5_TRACE=/dev/stderr` and
@@ -287,7 +287,7 @@ $ FLASK_DEBUG=1 FLASK_APP=hitron_exporter:app poetry run flask run
 Probe for metrics:
 
 ```
-$ poetry run http localhost:9938/probe address==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
+$ poetry run http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
 ## Building the container image

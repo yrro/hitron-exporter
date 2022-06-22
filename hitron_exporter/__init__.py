@@ -30,10 +30,10 @@ def probe():
     args = flask.request.args
 
     try:
-        address = args['address']
+        target = args['target']
     except KeyError:
-        return "Missing parameter: 'address'", 400
-    client = hitron.Client(address, args.get('fingerprint'))
+        return "Missing parameter: 'target'", 400
+    client = hitron.Client(target, args.get('fingerprint'))
 
     force = bool(int(args.get('force', '0')))
 
