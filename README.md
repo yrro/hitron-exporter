@@ -265,6 +265,38 @@ For example:
 $ podman run -v /etc/ipa:/etc/ipa -v /etc/hitron-exporter.keytab:/etc/hitron-exporter.keytab --env KRB5CCNAME=MEMORY: --env KRB5_TRACE=/dev/stderr --env KRB5_CLIENT_KTNAME=/etc/hitron-exporter.keytab --net=host --name hitron-exporter --replace --rm hitron-exporter:latest
 ```
 
+## Configuring the scrape target in Prometheus
+
+Sample `prometheus.yml` snippet:
+
+```
+scrape_configs:
+- job_name: hitron
+  scrape_interval: 15s
+  metrics_path: /probe
+  params:
+    fingerprint: ['A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10']
+    ipa_vault_namespace: ['service:host/cm-hitron.example.com']
+  static_configs:
+  - targets: ['192.2.0.1']
+  relabel_configs:
+  - source_labels: [__address__]
+    target_label: __param_target
+  - source_labels: [__param_target]
+    target_label: instance
+  - replacement: 'localhost:9938'
+    target_label: __address__
+```
+
+This assumes you're running the exporter on the same machine as Prometheus. If
+not, adjust the replacement string for `__address__` as appropriate.
+
+If you're not using FreeIPA to store credentials, and you're OK with hardcoding
+the credentials into `prometheus.yml`, remove `ipa_vault_namespace` from the
+job's `params` and add `usr` and `pwd`. Note that the values for these
+attributes are lists, not strings; the username and password should be the sole
+entires in each list.
+
 ## Using your own Gunicorn settings in a container
 
 [Gunicorn settings](https://docs.gunicorn.org/en/latest/settings.html) can be
