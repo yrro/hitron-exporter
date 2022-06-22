@@ -22,7 +22,7 @@ Credentials can be stored securely in a [FreeIPA](https://www.freeipa.org/)
 vault. At some point I'll add the ability to retrieve them from a config file
 as well.
 
-Communcation with the CPE device is secured by TLS; the TLS server certificate
+Communication with the CPE device is secured by TLS; the TLS server certificate
 fingerprint is checked against the value configured in Prometheus.
 
 Written in [Python](https://python.org/) (or is this an anti-feature?)
