@@ -1,3 +1,4 @@
+from logging import getLogger
 import re
 
 import flask
@@ -6,6 +7,9 @@ import prometheus_client.core
 
 from . import hitron
 from . import ipavault
+
+
+LOGGER = getLogger(__name__)
 
 
 ipavault_credentials = None
@@ -132,9 +136,19 @@ class Collector:
 
 
     def parse_pkt(self, pkt):
-        m = re.match(r'(\d+(?:\.\d+)?)M Bytes', pkt)
-        if m:
-            return 1e6 * float(m.group(1))
+        m = re.match(r'(\d+(?:\.\d+)?)([A-Z]) Bytes', pkt)
+        if not m:
+            LOGGER.error("Couldn't parse %r as pkt", pkt)
+            return None
+
+        factor = {
+            'M': 1e6,
+        }.get(m.group(2))
+        if not factor:
+            LOGGER.error("Unknown pkt factor %r", m.group(2))
+            return None
+
+        return float(m.group(1)) * factor
 
 
     def collect_sysinfo(self):
