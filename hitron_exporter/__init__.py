@@ -108,27 +108,33 @@ class Collector:
     def collect_network(self):
         nw_tx = prometheus_client.core.CounterMetricFamily('hitron_network_transmit_bytes', '', labels=['device'])
 
-        m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['LSendPkt'])
-        if m:
-            nw_tx.add_metric(['lan'], 1e6 * float(m.group(1)))
+        nbytes = self.parse_pkt(self.__sysinfo[0]['LSendPkt'])
+        if nbytes:
+            nw_tx.add_metric(['lan'], nbytes)
 
-        m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['WSendPkt'])
-        if m:
-            nw_tx.add_metric(['wan'], 1e6 * float(m.group(1)))
+        nbytes = self.parse_pkt(self.__sysinfo[0]['WSendPkt'])
+        if nbytes:
+            nw_tx.add_metric(['wan'], nbytes)
 
         yield nw_tx
 
         nw_rx = prometheus_client.core.CounterMetricFamily('hitron_network_receive_bytes', '', labels=['device'])
 
-        m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['LRecPkt'])
-        if m:
-            nw_rx.add_metric(['lan'], 1e6 * float(m.group(1)))
+        nbytes = self.parse_pkt(self.__sysinfo[0]['LRecPkt'])
+        if nbytes:
+            nw_rx.add_metric(['lan'], nbytes)
 
-        m = re.match(r'(\d+(?:\.\d+)?)M Bytes', self.__sysinfo[0]['WRecPkt'])
-        if m:
-            nw_rx.add_metric(['wan'], 1e6 * float(m.group(1)))
+        nbytes = self.parse_pkt(self.__sysinfo[0]['WRecPkt'])
+        if nbytes:
+            nw_rx.add_metric(['wan'], nbytes)
 
         yield nw_rx
+
+
+    def parse_pkt(self, pkt):
+        m = re.match(r'(\d+(?:\.\d+)?)M Bytes', pkt)
+        if m:
+            return 1e6 * float(m.group(1))
 
 
     def collect_sysinfo(self):
