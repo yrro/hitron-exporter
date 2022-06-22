@@ -104,7 +104,7 @@ class Collector:
 
         m = re.match(r'(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds', self.__sysinfo[0]['systemUptime'])
         if m:
-            uptime.add_metric([], 86400 * int(m.group(1)) + 3660 * int(m.group(2)) + int(m.group(3)))
+            uptime.add_metric([], 86400 * int(m.group(1)) + 3660 * int(m.group(2)) + 60 * int(m.group(3)) + m.group(4))
 
         yield uptime
 
