@@ -136,12 +136,14 @@ class Collector:
 
 
     def parse_pkt(self, pkt):
-        m = re.match(r'(\d+(?:\.\d+)?)([A-Z]) Bytes', pkt)
+        m = re.match(r'(\d+(?:\.\d+)?)([A-Z]?) Bytes', pkt)
         if not m:
             LOGGER.error("Couldn't parse %r as pkt", pkt)
             return None
 
         factor = {
+            '': 1,
+            'K': 1e3,
             'M': 1e6,
         }.get(m.group(2))
         if not factor:
