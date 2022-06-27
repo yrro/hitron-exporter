@@ -26,5 +26,5 @@ jobs:
       with:
         image: ghcr.io/yrro/hitron-exporter
         registry: ghcr.io
-        username: null
+        username: _ignored_
         password: ${{ secrets.GITHUB_TOKEN }}
