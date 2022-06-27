@@ -11,7 +11,8 @@ Flask = "^2.1.2"
 prometheus-client = "^0.14.1"
 python-ldap = {version = "^3.4.0", optional = true}
 ipaclient = {version = "^4.8.9", optional = true}
-gunicorn = "^20.1.0"
+gunicorn = {version = "^20.1.0", optional = true}
+setproctitle = {version = "^1.2.3", optional = true}
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
@@ -24,3 +25,4 @@ build-backend = "poetry.core.masonry.api"
 # This bit is maintained by hand
 [tool.poetry.extras]
 freeipa-vault = ["ipaclient", "python-ldap"]
+container = ["gunicorn", "setproctitle"]
