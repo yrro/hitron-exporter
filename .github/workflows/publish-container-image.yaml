@@ -19,11 +19,12 @@ jobs:
       uses: redhat-actions/s2i-build@v2
       with:
         builder_image: 'registry.access.redhat.com/ubi8/python-39:latest'
-        image: hitron-exporter
+        image: ghcr.io/yrro/hitron-exporter
        
     - name: Push Image
       uses: redhat-actions/push-to-registry@v2
       with:
-        image: hitron-exporter
-        registry: ghcr.io/yrro
+        image: ghcr.io/yrro/hitron-exporter
+        registry: ghcr.io
+        username: yrro
         password: ${{ secrets.GITHUB_TOKEN }}
