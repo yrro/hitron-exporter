@@ -21,12 +21,6 @@ jobs:
         builder_image: 'registry.access.redhat.com/ubi8/python-39:latest'
         image: ghcr.io/yrro/hitron-exporter
         
-    - name: Scan image
-      uses: Azure/container-scan@v0.1
-      with:
-        image-name: ghcr.io/yrro/hitron-exporter
-        severity-threshold: HIGH
-       
     - name: Push image
       uses: redhat-actions/push-to-registry@v2
       with:
