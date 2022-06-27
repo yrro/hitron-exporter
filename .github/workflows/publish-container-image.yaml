@@ -15,13 +15,21 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     
-    - name: Build Image
+    - name: Build image
       uses: redhat-actions/s2i-build@v2
       with:
         builder_image: 'registry.access.redhat.com/ubi8/python-39:latest'
         image: ghcr.io/yrro/hitron-exporter
+        
+    - name: Scan image
+      uses: Azure/container-scan@v0.1
+      with:
+        # Docker image to scan
+        image-name: ghcr.io/yrro/hitron-exporter
+        # Minimum severities of vulnerabilities to be displayed (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)
+        severity-threshold: LOW # optional, default is HIGH
        
-    - name: Push Image
+    - name: Push image
       uses: redhat-actions/push-to-registry@v2
       with:
         image: ghcr.io/yrro/hitron-exporter
