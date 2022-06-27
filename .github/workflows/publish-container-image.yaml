@@ -24,10 +24,8 @@ jobs:
     - name: Scan image
       uses: Azure/container-scan@v0.1
       with:
-        # Docker image to scan
         image-name: ghcr.io/yrro/hitron-exporter
-        # Minimum severities of vulnerabilities to be displayed (UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL)
-        severity-threshold: LOW # optional, default is HIGH
+        severity-threshold: HIGH
        
     - name: Push image
       uses: redhat-actions/push-to-registry@v2
