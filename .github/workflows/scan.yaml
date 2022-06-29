@@ -14,8 +14,6 @@ jobs:
 
     steps:
 
-    #- run: docker pull ghcr.io/yrro/hitron-exporter:latest
-
     - uses: azure/container-scan@v0
       with:
         image-name: ghcr.io/yrro/hitron-exporter:latest
