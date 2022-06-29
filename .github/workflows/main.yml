@@ -1,8 +1,11 @@
 name: Scan container image
 
 on:
+
   schedule:
   - cron: 18 13 26 * *
+  
+  workflow_dispatch: {}
     
 jobs:
 
