@@ -331,11 +331,21 @@ $ s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter
 To build using [Podman](https://podman.io/):
 
 ```
+$ s2i build -U unix://$XDG_RUNTIME_DIR/podman/podman.sock . registry.access.redhat.com/ubi8/python-39 hitron-exporter
+```
+
+<details>
+This relies on Podman providing the docker API. With older Podman versions, a
+Docker build context directory can be generated and built from with a script
+such as:
+
+```
 $ rm -rf /tmp/hitron-exporter-docker-context \
     && mkdir /tmp/hitron-exporter-docker-context
     && s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter --as-dockerfile /tmp/hitron-exporter-docker-context/Dockerfile \
     && podman build /tmp/hitron-exporter-docker-context -t ghcr.io/yrro/hitron-exporter:latest
 ```
+</details>
 
 ## Alternatives
 
