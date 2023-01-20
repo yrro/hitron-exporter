@@ -145,7 +145,7 @@ the copy installed by Poetry.
 ## Transport security
 
 HTTPS is used to protect the confidentiality and integrity of communictions
-with the CPU device, however the modem's TLS server certificate can't be
+with the CPE device, however the modem's TLS server certificate can't be
 verified in the usual way.
 
 We can work around this by telling the exporter to check the fingerprint of the
