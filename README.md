@@ -325,13 +325,13 @@ You need [source-to-image](https://github.com/openshift/source-to-image).
 To build using [Docker](https://www.docker.com/):
 
 ```
-$ s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter
+$ s2i build . registry.access.redhat.com/ubi9/python-39 hitron-exporter
 ```
 
 To build using [Podman](https://podman.io/):
 
 ```
-$ s2i build -U unix://$XDG_RUNTIME_DIR/podman/podman.sock . registry.access.redhat.com/ubi8/python-39 hitron-exporter
+$ s2i build -U unix://$XDG_RUNTIME_DIR/podman/podman.sock . registry.access.redhat.com/ubi9/python-39 hitron-exporter
 ```
 
 <details>
@@ -342,7 +342,7 @@ such as:
 ```
 $ rm -rf /tmp/hitron-exporter-docker-context \
     && mkdir /tmp/hitron-exporter-docker-context
-    && s2i build . registry.access.redhat.com/ubi8/python-39 hitron-exporter --as-dockerfile /tmp/hitron-exporter-docker-context/Dockerfile \
+    && s2i build . registry.access.redhat.com/ubi9/python-39 hitron-exporter --as-dockerfile /tmp/hitron-exporter-docker-context/Dockerfile \
     && podman build /tmp/hitron-exporter-docker-context -t ghcr.io/yrro/hitron-exporter:latest
 ```
 </details>

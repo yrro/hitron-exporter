@@ -19,7 +19,7 @@ jobs:
     - name: Build image
       uses: redhat-actions/s2i-build@v2
       with:
-        builder_image: 'registry.access.redhat.com/ubi8/python-39:latest'
+        builder_image: 'registry.access.redhat.com/ubi9/python-39:latest'
         image: ghcr.io/yrro/hitron-exporter
         
     - name: Push image
