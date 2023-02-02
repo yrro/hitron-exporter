@@ -49,4 +49,6 @@ EXPOSE 9938
 
 LABEL org.opencontainers.image.source=https://github.com/yrro/hitron-exporter
 
+USER 1001:0
+
 # vim: ts=8 sts=2 sw=2 et
