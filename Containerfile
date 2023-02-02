@@ -1,8 +1,9 @@
 FROM registry.access.redhat.com/ubi9/ubi-minimal AS builder
 
-RUN --mount=type=cache,target=/var/cache/yum \
+RUN \
   microdnf -y --nodocs --setopt=install_weak_deps=0 install \
-    python3 python3-pip python3-devel krb5-devel gcc openldap-devel
+    python3 python3-pip python3-devel krb5-devel gcc openldap-devel \
+  && microdnf -y clean all
 
 # Mouting ~/.cache/pip as a cache volume causes micropipenv to fail to build
 # wheels for gssapi/ldap; so let's just disable caching altogether.
@@ -33,9 +34,10 @@ RUN python3 -m venv /opt/app-root/venv \
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
-RUN --mount=type=cache,target=/var/cache/yum \
+RUN \
   microdnf -y --nodocs --setopt=install_weak_deps=0 install \
-    python3
+    python3 \
+  && microdnf -y clean all
 
 WORKDIR /opt/app-root
 
