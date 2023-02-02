@@ -320,32 +320,15 @@ $ poetry run http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2
 
 ## Building the container image
 
-You need [source-to-image](https://github.com/openshift/source-to-image).
-
-To build using [Docker](https://www.docker.com/):
-
 ```
-$ s2i build . registry.access.redhat.com/ubi9/python-39 hitron-exporter
+$ podman build -t hitron-exporter .
 ```
 
-To build using [Podman](https://podman.io/):
+or
 
 ```
-$ s2i build -U unix://$XDG_RUNTIME_DIR/podman/podman.sock . registry.access.redhat.com/ubi9/python-39 hitron-exporter
+$ docker build -t hitron-exporter -f Containerfile .
 ```
-
-<details>
-This relies on Podman providing the docker API. With older Podman versions, a
-Docker build context directory can be generated and built from with a script
-such as:
-
-```
-$ rm -rf /tmp/hitron-exporter-docker-context \
-    && mkdir /tmp/hitron-exporter-docker-context
-    && s2i build . registry.access.redhat.com/ubi9/python-39 hitron-exporter --as-dockerfile /tmp/hitron-exporter-docker-context/Dockerfile \
-    && podman build /tmp/hitron-exporter-docker-context -t ghcr.io/yrro/hitron-exporter:latest
-```
-</details>
 
 ## Alternatives
 
