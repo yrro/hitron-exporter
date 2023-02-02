@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal AS builder
 
 RUN --mount=type=cache,target=/var/cache/yum \
   microdnf -y --nodocs --setopt=install_weak_deps=0 install \
@@ -12,18 +12,11 @@ RUN --mount=type=cache,target=/var/cache/yum \
 #
 ENV PIP_NO_CACHE_DIR=off PIP_ROOT_USER_ACTION=off
 
-RUN python3 -m venv /opt/app-root/venv-micropipenv \
-  && /opt/app-root/venv-micropipenv/bin/python -m pip install micropipenv[toml]
+RUN python3 -m pip install micropipenv[toml]
 
-RUN install -d /opt/app-root/src
-
-WORKDIR /opt/app-root/src
-
-COPY hitron_exporter hitron_exporter
+WORKDIR /opt/app-build
 
 COPY pyproject.toml poetry.lock .
-
-RUN python3 -m venv /opt/app-root/venv-app
 
 # micropipenv installs all extra packages by default, so we don't need to
 # specify -E freeipa-vault,container as we would with poetry.
@@ -33,10 +26,24 @@ RUN python3 -m venv /opt/app-root/venv-app
 # installing. We did try the --no-cache pip option, but even with that option
 # provided, there are still a couple of files cached!
 #
-RUN source /opt/app-root/venv-app/bin/activate \
-  && /opt/app-root/venv-micropipenv/bin/python -m micropipenv install --deploy
+RUN python3 -m venv /opt/app-root/venv \
+  && source /opt/app-root/venv/bin/activate \
+  && /usr/bin/python3 -m micropipenv install --deploy
 
-CMD /opt/app-root/venv-app/bin/gunicorn -b 0.0.0.0:9938 hitron_exporter:app
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal
+
+RUN --mount=type=cache,target=/var/cache/yum \
+  microdnf -y --nodocs --setopt=install_weak_deps=0 install \
+    python3
+
+WORKDIR /opt/app-root
+
+COPY --from=builder /opt/app-root/venv /opt/app-root/venv
+
+COPY hitron_exporter hitron_exporter
+
+CMD /opt/app-root/venv/bin/gunicorn -b 0.0.0.0:9938 hitron_exporter:app
 
 EXPOSE 9938
 
