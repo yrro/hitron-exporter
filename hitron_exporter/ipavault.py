@@ -2,8 +2,6 @@ from logging import getLogger
 import os
 from typing import Sequence
 
-from ipalib import api
-
 
 LOGGER = getLogger(__name__)
 
@@ -41,6 +39,9 @@ def check_keytab_readable():
 
 
 def maybe_finalize_api():
+    # Import ipalib lazily here, since it is an optional dependency
+    from ipalib import api
+
     global api_finalized
     if not api_finalized:
         api.bootstrap(context='cli')
