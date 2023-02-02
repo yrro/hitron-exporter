@@ -10,7 +10,7 @@ on:
     
 jobs:
 
-  s2i:
+  build:
     runs-on: ubuntu-latest
     steps:
     
@@ -18,10 +18,11 @@ jobs:
       uses: actions/checkout@v3
     
     - name: Build image
-      uses: redhat-actions/s2i-build@v2
+      uses: redhat-actions/buildah-build@v2
       with:
-        builder_image: 'registry.access.redhat.com/ubi8/python-39:latest'
         image: ghcr.io/yrro/hitron-exporter
+        containerfiles: |
+          ./Containerfile
         
     - name: Push image
       uses: redhat-actions/push-to-registry@v2
