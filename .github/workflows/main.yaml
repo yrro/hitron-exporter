@@ -1,16 +1,17 @@
 name: Build & publish container image
 
 on:
+
   push:
     branches:
     - master
+
   workflow_dispatch: {}
     
 jobs:
 
   s2i:
     runs-on: ubuntu-latest
-
     steps:
     
     - name: Checkout
