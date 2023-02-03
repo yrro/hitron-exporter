@@ -13,7 +13,7 @@ RUN \
 #
 ENV PIP_NO_CACHE_DIR=off PIP_ROOT_USER_ACTION=off
 
-RUN python3 -m pip install micropipenv[toml]
+RUN python3 -m pip install build micropipenv[toml]
 
 WORKDIR /opt/app-build
 
@@ -29,6 +29,12 @@ RUN python3 -m venv /opt/app-root/venv \
   && source /opt/app-root/venv/bin/activate \
   && /usr/bin/python3 -m micropipenv install --deploy
 
+COPY hitron_exporter hitron_exporter
+
+RUN python3 -m build
+
+RUN /opt/app-root/venv/bin/python3 -m pip install --no-deps dist/*.whl
+
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
@@ -40,8 +46,6 @@ RUN \
 WORKDIR /opt/app-root
 
 COPY --from=builder /opt/app-root/venv /opt/app-root/venv
-
-COPY hitron_exporter hitron_exporter
 
 CMD /opt/app-root/venv/bin/gunicorn \
   -b 0.0.0.0:9938 \
