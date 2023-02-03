@@ -19,6 +19,9 @@ WORKDIR /opt/app-build
 
 COPY pyproject.toml poetry.lock .
 
+# We activate the app's venv so that micropipenv will install into it instead
+# of the system Python environment.
+#
 # micropipenv installs all extra packages by default, so we don't need to
 # specify -E freeipa-vault,container as we would with poetry.
 #
