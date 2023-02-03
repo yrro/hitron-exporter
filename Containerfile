@@ -1,3 +1,7 @@
+# This is a two-stage build process. The first 'builder' container creates a
+# venv into which the application's dependencies are installed. Then a wheel of
+# the application is built and it too is installed into the venv.
+#
 FROM registry.access.redhat.com/ubi9/ubi-minimal AS builder
 
 RUN \
@@ -35,7 +39,13 @@ RUN python3 -m build
 
 RUN /opt/app-root/venv/bin/python3 -m pip install --no-deps dist/*.whl
 
-
+# In the second stage, a minimal set of OS packages required to run the
+# application is installed, and then the venv is copied from the 'builder'
+# container.
+#
+# This saves about 200 MiB of disk space, as there's no need to include gcc and
+# header files in the app's container.
+#
 FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 RUN \
