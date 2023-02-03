@@ -40,6 +40,7 @@ def check_keytab_readable():
 
 def maybe_finalize_api():
     # Import ipalib lazily here, since it is an optional dependency
+    global api
     from ipalib import api
 
     global api_finalized
