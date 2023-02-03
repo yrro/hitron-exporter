@@ -25,11 +25,6 @@ COPY pyproject.toml poetry.lock .
 # micropipenv installs all extra packages by default, so we don't need to
 # specify -E freeipa-vault,container as we would with poetry.
 #
-# For some reason mouting ~/.cache/pip as a cache volume causes micropipenv to
-# fail to build gssapi/ldap wheels. So instead we wipe the cache manually after
-# installing. We did try the --no-cache pip option, but even with that option
-# provided, there are still a couple of files cached!
-#
 RUN python3 -m venv /opt/app-root/venv \
   && source /opt/app-root/venv/bin/activate \
   && /usr/bin/python3 -m micropipenv install --deploy
