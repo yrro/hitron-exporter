@@ -68,9 +68,7 @@ LABEL \
   org.opencontainers.image.authors="Sam Morris <sam@robots.org.uk>" \
   org.opencontainers.image.base.name=registry.access.redhat.com/ubi9/ubi-minimal \
   org.opencontainers.image.description="Hitron CGN series Prometheus exporter" \
-  org.opencontainers.image.source=https://github.com/yrro/hitron-exporter.git \
   org.opencontainers.image.title="hitron-exporter" \
-  org.opencontainers.image.url=https://github.com/yrro/hitron-exporter.git \
   org.opencontainers.image.vendor="Sam Morris <sam@robots.org.uk>"
 
 USER 1001:0
