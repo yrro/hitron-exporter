@@ -23,6 +23,8 @@ jobs:
         image: ghcr.io/yrro/hitron-exporter
         containerfiles: |
           ./Containerfile
+        labels: |
+          org.opencontainers.image.revision=${{ github.sha }}
         
     - name: Push image
       uses: redhat-actions/push-to-registry@v2
