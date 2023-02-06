@@ -14,7 +14,7 @@ ipaclient = {version = "^4.8.9", optional = true}
 gunicorn = {version = "^20.1.0", optional = true}
 setproctitle = {version = "^1.2.3", optional = true}
 # ipalib is broken by <https://jasonralph.org/?p=997>
-cryptography = "<38"
+cryptography = "<39"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.3.0"
