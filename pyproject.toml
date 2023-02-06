@@ -16,7 +16,7 @@ setproctitle = {version = "^1.2.3", optional = true}
 # ipalib is broken by <https://jasonralph.org/?p=997>
 cryptography = "<38"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^22.3.0"
 httpie = "^3.2.1"
 safety = "^2.0.0"
