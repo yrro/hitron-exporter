@@ -11,6 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+
+    - name: Record build timestamp
+      id: date_rfc_5322
+      run: echo date_rfc_5322=$(date -R) >> $GITHUB_ENV
     
     - name: Checkout
       uses: actions/checkout@v3
@@ -22,6 +26,7 @@ jobs:
         containerfiles: |
           ./Containerfile
         labels: |
+          org.opencontainers.image.created=${{ env.date_rfc_5322 }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.url=https://github.com/${{ github.repository }}
