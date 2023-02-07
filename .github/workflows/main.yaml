@@ -30,6 +30,21 @@ jobs:
           org.opencontainers.image.source=${{ github.repositoryUrl }}
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.url=https://github.com/${{ github.repository }}
+
+    - name: Extract base image from image
+      run: echo image_base_ref=$(buildah inspect --type=image ghcr.io/yrro/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_ENV
+
+    - name: Extract digest from base image
+      run: echo image_base_digest=$(buildah inspect --type=image $image_base_ref | jq '.FromImageDigest' -r) >> $GITHUB_ENV
+
+    - name: Apply base image labels
+      run: >
+        buildah from --pull=never --name=w ghcr.io/yrro/hitron-exporter
+        && buildah config
+          --label org.opencontainers.image.base.name="$image_base_ref"
+          --label org.opencontainers.image.base.digest="$image_base_digest"
+          w
+        && buildah commit w ghcr.io/yrro/hitron-exporter
         
     - name: Push image
       uses: redhat-actions/push-to-registry@v2
