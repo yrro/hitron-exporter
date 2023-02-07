@@ -14,6 +14,7 @@ jobs:
 
     - name: Record build timestamp
       run: echo date_rfc_5322=$(date -R) >> $GITHUB_ENV
+      shell: bash
     
     - name: Checkout
       uses: actions/checkout@v3
@@ -32,9 +33,11 @@ jobs:
 
     - name: Extract base image from image
       run: echo image_base_ref=$(buildah inspect --type=image ghcr.io/yrro/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_ENV
+      shell: bash
 
     - name: Extract digest from base image
       run: echo image_base_digest=$(buildah inspect --type=image $image_base_ref | jq '.FromImageDigest' -r) >> $GITHUB_ENV
+      shell: bash
 
     - name: Apply base image labels
       run: |
@@ -44,6 +47,7 @@ jobs:
           --label org.opencontainers.image.base.digest="$image_base_digest"\
           w \
         && buildah commit w ghcr.io/yrro/hitron-exporter
+      shell: bash
         
     - name: Push image
       uses: redhat-actions/push-to-registry@v2
