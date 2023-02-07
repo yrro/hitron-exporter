@@ -13,7 +13,6 @@ jobs:
     steps:
 
     - name: Record build timestamp
-      id: date_rfc_5322
       run: echo date_rfc_5322=$(date -R) >> $GITHUB_ENV
     
     - name: Checkout
