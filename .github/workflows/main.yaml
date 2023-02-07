@@ -39,7 +39,7 @@ jobs:
 
     - name: Apply base image labels
       run: >
-        buildah from --pull=never --name=w ghcr.io/yrro/hitron-exporter
+        buildah from --pull=false --name=w ghcr.io/yrro/hitron-exporter
         && buildah config
           --label org.opencontainers.image.base.name="$image_base_ref"
           --label org.opencontainers.image.base.digest="$image_base_digest"
