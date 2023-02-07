@@ -37,12 +37,12 @@ jobs:
       run: echo image_base_digest=$(buildah inspect --type=image $image_base_ref | jq '.FromImageDigest' -r) >> $GITHUB_ENV
 
     - name: Apply base image labels
-      run: >
-        buildah from --pull=false --name=w ghcr.io/yrro/hitron-exporter
-        && buildah config
-          --label org.opencontainers.image.base.name="$image_base_ref"
-          --label org.opencontainers.image.base.digest="$image_base_digest"
-          w
+      run: |
+        buildah from --pull=false --name=w ghcr.io/yrro/hitron-exporter \
+        && buildah config \
+          --label org.opencontainers.image.base.name="$image_base_ref" \
+          --label org.opencontainers.image.base.digest="$image_base_digest"\
+          w \
         && buildah commit w ghcr.io/yrro/hitron-exporter
         
     - name: Push image
