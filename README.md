@@ -293,24 +293,16 @@ job's `params` and add `usr` and `pwd`. Note that the values for these
 attributes are lists, not strings; the username and password should be the sole
 entires in each list.
 
-<!--
 ## Using your own Gunicorn settings in a container
-
-**Note**
-This was a feature of the `ubi?/python-*` container images which we no longer
-build from. It's possible that modern versions of Gunicorn use the
-`GUNICORN_CMD_ARGS` environment variable directly; experimentation is required.
 
 [Gunicorn settings](https://docs.gunicorn.org/en/latest/settings.html) can be
 specified via the `GUNICORN_CMD_ARGS` environment variable. This will override
-the default settings baked into the container image, so you shoudl use the
+the default settings baked into the container image, so you should use the
 following command, replacing `...` with your preferred settings.
 
 ```
 $ podman run --name hitron-exporter --net=host --rm --replace --env GUNICORN_CMD_ARGS='--bind=0.0.0.0:9938 --access-logfile=- ...' ghcr.io/yrro/hitron-exporter:latest
 ```
--->
-
 ## How to develop
 
 Run a development web server:

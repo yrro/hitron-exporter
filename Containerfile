@@ -57,10 +57,14 @@ WORKDIR /opt/app-root
 
 COPY --from=builder /opt/app-root/venv /opt/app-root/venv
 
-CMD /opt/app-root/venv/bin/gunicorn \
-  -b 0.0.0.0:9938 \
-  --access-logfile=- \
-  hitron_exporter:app
+ENV \
+  PYTHONUNBUFFERED=1 \
+  GUNICORN_CMD_ARGS="-b 0.0.0.0:9938 --access-logfile=-"
+
+CMD [ \
+  "/opt/app-root/venv/bin/gunicorn", \
+  "hitron_exporter:app" \
+]
 
 EXPOSE 9938
 
