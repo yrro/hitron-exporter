@@ -326,6 +326,12 @@ $ podman build -t hitron-exporter .
 or
 
 ```
+$ buildah build -t hitron-exporter --layers .
+```
+
+or
+
+```
 $ docker build -t hitron-exporter -f Containerfile .
 ```
 
