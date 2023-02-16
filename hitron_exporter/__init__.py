@@ -143,6 +143,7 @@ class Collector:
             '': 1,
             'K': 1e3,
             'M': 1e6,
+            'G': 1e9,
         }.get(m.group(2))
         if not factor:
             LOGGER.error("Unknown pkt factor %r", m.group(2))
