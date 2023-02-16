@@ -9,12 +9,13 @@ python = "^3.9"
 requests = "^2.28.0"
 Flask = "^2.1.2"
 prometheus-client = "^0.14.1"
-python-ldap = {version = "^3.4.0", optional = true}
-ipaclient = {version = "^4.8.9", optional = true}
 gunicorn = {version = "^20.1.0", optional = true}
 setproctitle = {version = "^1.2.3", optional = true}
 # ipalib is broken by <https://jasonralph.org/?p=997>
 cryptography = "<38"
+ipalib = {version = "^4.8.9", optional = true}
+# required by ipalib, but we need to specify here in order to enable the ldap extra
+ipapython = {version = "^4.8.9", optional = true, extras = ["ldap"]}
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.3.0"
@@ -27,5 +28,5 @@ build-backend = "poetry.core.masonry.api"
 
 # This bit is maintained by hand
 [tool.poetry.extras]
-freeipa-vault = ["ipaclient", "python-ldap"]
+freeipa-vault = ["ipalib", "ipapython"]
 container = ["gunicorn", "setproctitle"]
