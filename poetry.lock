@@ -496,6 +496,30 @@ perf = ["ipython"]
 testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)"]
 
 [[package]]
+name = "ipaclient"
+version = "4.8.9"
+description = "FreeIPA client library"
+category = "main"
+optional = true
+python-versions = ">=3.6.0"
+files = [
+    {file = "ipaclient-4.8.9-py2.py3-none-any.whl", hash = "sha256:372e3b9010dbb9a7b6dc01cc79159372a2ed0ac48975215ce40085485d1306bd"},
+]
+
+[package.dependencies]
+cryptography = ">=1.6"
+ipalib = "4.8.9"
+ipapython = "4.8.9"
+qrcode = ">=5.0"
+six = "*"
+
+[package.extras]
+csrgen = ["cffi", "jinja2"]
+install = ["ipaplatform"]
+ldap = ["python-ldap"]
+otptoken-yubikey = ["python-yubico", "pyusb"]
+
+[[package]]
 name = "ipalib"
 version = "4.8.9"
 description = "FreeIPA common python library"
@@ -957,6 +981,18 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
+name = "pypng"
+version = "0.20220715.0"
+description = "Pure Python library for saving and loading PNG images"
+category = "main"
+optional = true
+python-versions = "*"
+files = [
+    {file = "pypng-0.20220715.0-py3-none-any.whl", hash = "sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c"},
+    {file = "pypng-0.20220715.0.tar.gz", hash = "sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1"},
+]
+
+[[package]]
 name = "pysocks"
 version = "1.7.1"
 description = "A Python SOCKS client module. See https://github.com/Anorov/PySocks for more information."
@@ -983,6 +1019,30 @@ files = [
 [package.dependencies]
 pyasn1 = ">=0.3.7"
 pyasn1_modules = ">=0.1.5"
+
+[[package]]
+name = "qrcode"
+version = "7.4.2"
+description = "QR Code image generator"
+category = "main"
+optional = true
+python-versions = ">=3.7"
+files = [
+    {file = "qrcode-7.4.2-py3-none-any.whl", hash = "sha256:581dca7a029bcb2deef5d01068e39093e80ef00b4a61098a2182eac59d01643a"},
+    {file = "qrcode-7.4.2.tar.gz", hash = "sha256:9dd969454827e127dbd93696b20747239e6d540e082937c90f14ac95b30f5845"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+pypng = "*"
+typing-extensions = "*"
+
+[package.extras]
+all = ["pillow (>=9.1.0)", "pytest", "pytest-cov", "tox", "zest.releaser[recommended]"]
+dev = ["pytest", "pytest-cov", "tox"]
+maintainer = ["zest.releaser[recommended]"]
+pil = ["pillow (>=9.1.0)"]
+test = ["coverage", "pytest"]
 
 [[package]]
 name = "requests"
@@ -1257,7 +1317,7 @@ files = [
 name = "typing-extensions"
 version = "4.5.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1318,9 +1378,9 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 
 [extras]
 container = ["gunicorn", "setproctitle"]
-freeipa-vault = ["ipalib", "ipapython"]
+freeipa-vault = ["ipaclient", "ipapython"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "61e0fcb800a3613bfc4d4431901f61d92008d5c1cee7b1d4447c9fda847b7941"
+content-hash = "37549f0420130d102c21b728a39cc49f5d942396bcd58d8243683e216543eeff"
