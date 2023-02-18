@@ -36,7 +36,10 @@ def check_keytab_readable():
             pass
     except Exception:
         LOGGER.exception(
-            "The client keytab %r is not readable; we will not be able to retrieve credentials from FreeIPA",
+            (
+                "The client keytab %r is not readable; we will not be able to retrieve"
+                " credentials from FreeIPA"
+            ),
             os.environ["KRB5_CLIENT_KTNAME"],
         )
 

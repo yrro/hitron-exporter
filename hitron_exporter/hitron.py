@@ -97,7 +97,10 @@ class Client:
 
         if not fingerprint:
             LOGGER.warn(
-                "Communication with <%s> is insecure because the TLS server certificate fingerprint was not specified.",
+                (
+                    "Communication with <%s> is insecure because the TLS server"
+                    " certificate fingerprint was not specified."
+                ),
                 host,
             )
             LOGGER.warn(
