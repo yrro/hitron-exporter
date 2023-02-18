@@ -23,7 +23,13 @@ repos:
     additional_dependencies:
     - Flake8-pyproject
     language_version: python3
-- repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-  rev: v1.3.1
+- repo: local
   hooks:
-  - id: python-safety-dependencies-check
+  - id: safety-check
+    name: safety check
+    entry: bash
+    args:
+    - -c
+    - poetry export --with=dev -E freeipa-vault -E container | safety check --stdin
+    language: system
+    files: pyproject.toml
