@@ -32,19 +32,19 @@ Written in [Python](https://python.org/) (or is this an anti-feature?)
 Metric definitions are not yet final!
 
 ```
-# HELP hitron_channel_upstream_signal_strength_dbmv 
+# HELP hitron_channel_upstream_signal_strength_dbmv
 # TYPE hitron_channel_upstream_signal_strength_dbmv gauge
 hitron_channel_upstream_signal_strength_dbmv{channel="2",frequency="39400000",port="1"} 37.0
 hitron_channel_upstream_signal_strength_dbmv{channel="1",frequency="46200000",port="2"} 35.75
 hitron_channel_upstream_signal_strength_dbmv{channel="3",frequency="32600000",port="3"} 35.75
 hitron_channel_upstream_signal_strength_dbmv{channel="4",frequency="25800000",port="4"} 37.25
-# HELP hitron_channel_upstream_bandwidth 
+# HELP hitron_channel_upstream_bandwidth
 # TYPE hitron_channel_upstream_bandwidth gauge
 hitron_channel_upstream_bandwidth{channel="2",frequency="39400000",port="1"} 6.4e+06
 hitron_channel_upstream_bandwidth{channel="1",frequency="46200000",port="2"} 6.4e+06
 hitron_channel_upstream_bandwidth{channel="3",frequency="32600000",port="3"} 6.4e+06
 hitron_channel_upstream_bandwidth{channel="4",frequency="25800000",port="4"} 6.4e+06
-# HELP hitron_channel_downstream_signal_strength_dbmv 
+# HELP hitron_channel_downstream_signal_strength_dbmv
 # TYPE hitron_channel_downstream_signal_strength_dbmv gauge
 hitron_channel_downstream_signal_strength_dbmv{channel="9",frequency="426250000",port="1"} 16.8
 hitron_channel_downstream_signal_strength_dbmv{channel="1",frequency="362250000",port="2"} 16.5
@@ -70,7 +70,7 @@ hitron_channel_downstream_signal_strength_dbmv{channel="21",frequency="522250000
 hitron_channel_downstream_signal_strength_dbmv{channel="22",frequency="530250000",port="22"} 16.5
 hitron_channel_downstream_signal_strength_dbmv{channel="23",frequency="538250000",port="23"} 16.5
 hitron_channel_downstream_signal_strength_dbmv{channel="24",frequency="546250000",port="24"} 16.7
-# HELP hitron_channel_downstream_snr 
+# HELP hitron_channel_downstream_snr
 # TYPE hitron_channel_downstream_snr gauge
 hitron_channel_downstream_snr{channel="9",frequency="426250000",port="1"} 40.946
 hitron_channel_downstream_snr{channel="1",frequency="362250000",port="2"} 40.366
@@ -96,18 +96,18 @@ hitron_channel_downstream_snr{channel="21",frequency="522250000",port="21"} 40.3
 hitron_channel_downstream_snr{channel="22",frequency="530250000",port="22"} 40.366
 hitron_channel_downstream_snr{channel="23",frequency="538250000",port="23"} 40.946
 hitron_channel_downstream_snr{channel="24",frequency="546250000",port="24"} 40.946
-# HELP hitron_system_uptime_seconds_total 
+# HELP hitron_system_uptime_seconds_total
 # TYPE hitron_system_uptime_seconds_total counter
 hitron_system_uptime_seconds_total 13734.0
-# HELP hitron_network_transmit_bytes_total 
+# HELP hitron_network_transmit_bytes_total
 # TYPE hitron_network_transmit_bytes_total counter
 hitron_network_transmit_bytes_total{device="lan"} 4.248e+07
 hitron_network_transmit_bytes_total{device="wan"} 6.37e+06
-# HELP hitron_network_receive_bytes_total 
+# HELP hitron_network_receive_bytes_total
 # TYPE hitron_network_receive_bytes_total counter
 hitron_network_receive_bytes_total{device="lan"} 1.74e+07
 hitron_network_receive_bytes_total{device="wan"} 2.556e+07
-# HELP hitron_system_info 
+# HELP hitron_system_info
 # TYPE hitron_system_info gauge
 hitron_system_info{hardware_version="2D",model_name="CGNV4-FX4",serial_number="ABC123",software_version="4.5.10.201-CD-UPC"} 1.0
 # HELP hitron_cm_bpi_info Cable Modem Baseline Privacy Interface
@@ -344,5 +344,3 @@ another Prometheus exporter for Hitron CGNV4 CPE devices. It's written in Go.
 interacting with Hitron CGNV4 CPE devices, has some code that makes sense of
 the DOCSIS and GRE status data. I might use it to create stateset/enum metrics
 for monitoring the status of these connections.
-
-

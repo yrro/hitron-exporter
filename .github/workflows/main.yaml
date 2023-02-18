@@ -15,10 +15,10 @@ jobs:
     - name: Record build timestamp
       run: echo date_rfc_5322=$(date -R) >> $GITHUB_ENV
       shell: bash
-    
+
     - name: Checkout
       uses: actions/checkout@v3
-    
+
     - name: Build image
       uses: redhat-actions/buildah-build@v2
       with:
@@ -48,7 +48,7 @@ jobs:
           w \
         && buildah commit w ghcr.io/yrro/hitron-exporter
       shell: bash
-        
+
     - name: Push image
       uses: redhat-actions/push-to-registry@v2
       with:
