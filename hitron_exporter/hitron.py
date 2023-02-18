@@ -158,7 +158,7 @@ class Client:
         r.raise_for_status()
 
 
-# We can't use ssl.get_server_certificate because it harcodes an SSLContext
+# We can't use ssl.get_server_certificate because it hardcodes an SSLContext
 # that is not lenient enough.
 def get_server_certificate_fingerprint(addr, timeout):
     ctx = HitronHTTPAdapter.create_context()
