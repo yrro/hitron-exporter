@@ -23,3 +23,7 @@ repos:
     additional_dependencies:
     - Flake8-pyproject
     language_version: python3
+- repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+  rev: v1.3.1
+  hooks:
+  - id: python-safety-dependencies-check
