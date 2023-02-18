@@ -30,18 +30,20 @@ def probe():
     args = flask.request.args
 
     try:
-        target = args['target']
+        target = args["target"]
     except KeyError:
         return "Missing parameter: 'target'", 400
-    client = hitron.Client(target, args.get('fingerprint'))
+    client = hitron.Client(target, args.get("fingerprint"))
 
-    force = bool(int(args.get('force', '0')))
+    force = bool(int(args.get("force", "0")))
 
-    if args.get('usr') and args.get('pwd'):
-        client.login(args.get('usr'), args.get('pwd'), force)
-    elif args.get('ipa_vault_namespace'):
+    if args.get("usr") and args.get("pwd"):
+        client.login(args.get("usr"), args.get("pwd"), force)
+    elif args.get("ipa_vault_namespace"):
         if ipavault_credentials is None:
-            ipavault_credentials = ipavault.retrieve(args.get('ipa_vault_namespace').split(':'))
+            ipavault_credentials = ipavault.retrieve(
+                args.get("ipa_vault_namespace").split(":")
+            )
         try:
             client.login(**ipavault_credentials, force=force)
         except PermissionError:
@@ -75,75 +77,99 @@ class Collector:
         yield from self.collect_docsis()
 
     def collect_usinfo(self):
-        usinfo_sigstr = prometheus_client.core.GaugeMetricFamily('hitron_channel_upstream_signal_strength_dbmv', '', labels=['port', 'channel', 'frequency'])
-        usinfo_bw = prometheus_client.core.GaugeMetricFamily('hitron_channel_upstream_bandwidth', '', labels=['port', 'channel', 'frequency'])
+        usinfo_sigstr = prometheus_client.core.GaugeMetricFamily(
+            "hitron_channel_upstream_signal_strength_dbmv",
+            "",
+            labels=["port", "channel", "frequency"],
+        )
+        usinfo_bw = prometheus_client.core.GaugeMetricFamily(
+            "hitron_channel_upstream_bandwidth",
+            "",
+            labels=["port", "channel", "frequency"],
+        )
 
         for uschannel in self.__usinfo:
-            key = [uschannel['portId'], uschannel['channelId'], uschannel['frequency']]
-            usinfo_sigstr.add_metric(key, float(uschannel['signalStrength']))
-            usinfo_bw.add_metric(key, int(uschannel['bandwidth']))
+            key = [uschannel["portId"], uschannel["channelId"], uschannel["frequency"]]
+            usinfo_sigstr.add_metric(key, float(uschannel["signalStrength"]))
+            usinfo_bw.add_metric(key, int(uschannel["bandwidth"]))
 
         yield usinfo_sigstr
         yield usinfo_bw
 
-
     def collect_dsinfo(self):
-        dsinfo_sigstr = prometheus_client.core.GaugeMetricFamily('hitron_channel_downstream_signal_strength_dbmv', '', labels=['port', 'channel', 'frequency'])
-        dsinfo_snr = prometheus_client.core.GaugeMetricFamily('hitron_channel_downstream_snr', '', labels=['port', 'channel', 'frequency'])
+        dsinfo_sigstr = prometheus_client.core.GaugeMetricFamily(
+            "hitron_channel_downstream_signal_strength_dbmv",
+            "",
+            labels=["port", "channel", "frequency"],
+        )
+        dsinfo_snr = prometheus_client.core.GaugeMetricFamily(
+            "hitron_channel_downstream_snr", "", labels=["port", "channel", "frequency"]
+        )
 
         for dschannel in self.__dsinfo:
-            key = [dschannel['portId'], dschannel['channelId'], dschannel['frequency']]
-            dsinfo_sigstr.add_metric(key, float(dschannel['signalStrength']))
-            dsinfo_snr.add_metric(key, float(dschannel['snr']))
+            key = [dschannel["portId"], dschannel["channelId"], dschannel["frequency"]]
+            dsinfo_sigstr.add_metric(key, float(dschannel["signalStrength"]))
+            dsinfo_snr.add_metric(key, float(dschannel["snr"]))
 
         yield dsinfo_sigstr
         yield dsinfo_snr
 
-    
     def collect_uptime(self):
-        m = re.match(r'(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds', self.__sysinfo[0]['systemUptime'])
+        m = re.match(
+            r"(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds",
+            self.__sysinfo[0]["systemUptime"],
+        )
         if m:
-            td = datetime.timedelta(days=int(m.group(1)), hours=int(m.group(2)), minutes=int(m.group(3)), seconds=int(m.group(4)))
-            yield prometheus_client.core.CounterMetricFamily('hitron_system_uptime_seconds_total', '', value=td.total_seconds())
-
+            td = datetime.timedelta(
+                days=int(m.group(1)),
+                hours=int(m.group(2)),
+                minutes=int(m.group(3)),
+                seconds=int(m.group(4)),
+            )
+            yield prometheus_client.core.CounterMetricFamily(
+                "hitron_system_uptime_seconds_total", "", value=td.total_seconds()
+            )
 
     def collect_network(self):
-        nw_tx = prometheus_client.core.CounterMetricFamily('hitron_network_transmit_bytes', '', labels=['device'])
+        nw_tx = prometheus_client.core.CounterMetricFamily(
+            "hitron_network_transmit_bytes", "", labels=["device"]
+        )
 
-        nbytes = self.parse_pkt(self.__sysinfo[0]['LSendPkt'])
+        nbytes = self.parse_pkt(self.__sysinfo[0]["LSendPkt"])
         if nbytes:
-            nw_tx.add_metric(['lan'], nbytes)
+            nw_tx.add_metric(["lan"], nbytes)
 
-        nbytes = self.parse_pkt(self.__sysinfo[0]['WSendPkt'])
+        nbytes = self.parse_pkt(self.__sysinfo[0]["WSendPkt"])
         if nbytes:
-            nw_tx.add_metric(['wan'], nbytes)
+            nw_tx.add_metric(["wan"], nbytes)
 
         yield nw_tx
 
-        nw_rx = prometheus_client.core.CounterMetricFamily('hitron_network_receive_bytes', '', labels=['device'])
+        nw_rx = prometheus_client.core.CounterMetricFamily(
+            "hitron_network_receive_bytes", "", labels=["device"]
+        )
 
-        nbytes = self.parse_pkt(self.__sysinfo[0]['LRecPkt'])
+        nbytes = self.parse_pkt(self.__sysinfo[0]["LRecPkt"])
         if nbytes:
-            nw_rx.add_metric(['lan'], nbytes)
+            nw_rx.add_metric(["lan"], nbytes)
 
-        nbytes = self.parse_pkt(self.__sysinfo[0]['WRecPkt'])
+        nbytes = self.parse_pkt(self.__sysinfo[0]["WRecPkt"])
         if nbytes:
-            nw_rx.add_metric(['wan'], nbytes)
+            nw_rx.add_metric(["wan"], nbytes)
 
         yield nw_rx
 
-
     def parse_pkt(self, pkt):
-        m = re.match(r'(\d+(?:\.\d+)?)([A-Z]?) Bytes', pkt)
+        m = re.match(r"(\d+(?:\.\d+)?)([A-Z]?) Bytes", pkt)
         if not m:
             LOGGER.error("Couldn't parse %r as pkt", pkt)
             return None
 
         factor = {
-            '': 1,
-            'K': 1e3,
-            'M': 1e6,
-            'G': 1e9,
+            "": 1,
+            "K": 1e3,
+            "M": 1e6,
+            "G": 1e9,
         }.get(m.group(2))
         if not factor:
             LOGGER.error("Unknown pkt factor %r", m.group(2))
@@ -151,19 +177,23 @@ class Collector:
 
         return float(m.group(1)) * factor
 
-
     def collect_sysinfo(self):
-        yield prometheus_client.core.InfoMetricFamily('hitron_system', '', value={
-            'serial_number': self.__sysinfo[0]['serialNumber'],
-            'software_version': self.__sysinfo[0]['swVersion'],
-            'hardware_version': self.__sysinfo[0]['hwVersion'],
-            'model_name': self.__system_model['modelName'],
-        })
-
+        yield prometheus_client.core.InfoMetricFamily(
+            "hitron_system",
+            "",
+            value={
+                "serial_number": self.__sysinfo[0]["serialNumber"],
+                "software_version": self.__sysinfo[0]["swVersion"],
+                "hardware_version": self.__sysinfo[0]["hwVersion"],
+                "model_name": self.__system_model["modelName"],
+            },
+        )
 
     def collect_docsis(self):
         bpi = {}
-        for element in self.__cminit[0]['bpiStatus'].split(','):
-            k, _, v = element.strip().partition(':')
+        for element in self.__cminit[0]["bpiStatus"].split(","):
+            k, _, v = element.strip().partition(":")
             bpi[k.lower()] = v.lower()
-        yield prometheus_client.core.InfoMetricFamily('hitron_cm_bpi', 'Cable Modem Baseline Privacy Interface', value=bpi)
+        yield prometheus_client.core.InfoMetricFamily(
+            "hitron_cm_bpi", "Cable Modem Baseline Privacy Interface", value=bpi
+        )

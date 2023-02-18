@@ -12,14 +12,13 @@ LOGGER = getLogger(__name__)
 
 
 class Client:
-
-    DATASET_USER_TYPE = 'user_type'
+    DATASET_USER_TYPE = "user_type"
     # {'UserType': '1'}
 
-    DATASET_SYSTEM_MODEL = 'system_model'
+    DATASET_SYSTEM_MODEL = "system_model"
     # {'modelName': 'CGNV4-FX4', 'skipWizard': '1'}
 
-    DATASET_SYSINFO = 'getSysInfo'
+    DATASET_SYSINFO = "getSysInfo"
     # [{'LRecPkt': '12.12M Bytes',
     #   'LSendPkt': '40.14M Bytes',
     #   'WRecPkt': '40.25M Bytes',
@@ -38,7 +37,7 @@ class Client:
     #   'timezone': '1',
     #   'wanIp': '203.0.113.1/24'}]
 
-    DATASET_CMINIT = 'getCMInit'
+    DATASET_CMINIT = "getCMInit"
     # [{'bpiStatus': 'AUTH:authorized, TEK:operational',
     #   'dhcp': 'Success',
     #   'downloadCfg': 'Success',
@@ -51,7 +50,7 @@ class Client:
     #   'timeOfday': 'Secret',
     #   'trafficStatus': 'Enable'}]
 
-    DATASET_DSINFO = 'dsinfo'
+    DATASET_DSINFO = "dsinfo"
     # [{'channelId': '9',
     #   'frequency': '426250000',
     #   'modulation': '2',
@@ -60,7 +59,7 @@ class Client:
     #   'snr': '40.946'},
     #  ...]
 
-    DATASET_CMDOCSISWAN = 'getCmDocsisWan'
+    DATASET_CMDOCSISWAN = "getCmDocsisWan"
     # [{'CmGateway': '10.252.220.1',
     #  'CmIpAddress': '10.252.220.125',
     #  'CmIpLeaseDuration': '04 Days,09 Hours,47 Minutes,10 '
@@ -69,7 +68,7 @@ class Client:
     #  'Configname': 'Secret',
     #  'NetworkAccess': 'Permitted'}],
 
-    DATASET_USINFO = 'usinfo'
+    DATASET_USINFO = "usinfo"
     # [{'bandwidth': '6400000',
     #   'channelId': '2',
     #   'frequency': '39400000',
@@ -78,7 +77,7 @@ class Client:
     #   'signalStrength': '36.000'},
     #  ...]
 
-    DATASET_CONNECTINFO = 'getConnectInfo'
+    DATASET_CONNECTINFO = "getConnectInfo"
     # [{'comnum': 1,
     #   'connectType': 'Self-assigned',
     #   'hostName': 'Unknown',
@@ -90,50 +89,72 @@ class Client:
     #   'online': 'active'},
     #  ...]
 
-    DATASET_TUNEFREQ = 'getTuneFreq'
+    DATASET_TUNEFREQ = "getTuneFreq"
     # [{'tunefreq': '426.250'}]
 
-
     def __init__(self, host, fingerprint):
-        self.__base_url = f'https://{host}/'
+        self.__base_url = f"https://{host}/"
 
         if not fingerprint:
-            LOGGER.warn('Communication with <%s> is insecure because the TLS server certificate fingerprint was not specified.', host)
-            LOGGER.warn('Fingerprint of <%s> is %s', host, get_server_certificate_fingerprint((host, 443), timeout=5))
+            LOGGER.warn(
+                "Communication with <%s> is insecure because the TLS server certificate fingerprint was not specified.",
+                host,
+            )
+            LOGGER.warn(
+                "Fingerprint of <%s> is %s",
+                host,
+                get_server_certificate_fingerprint((host, 443), timeout=5),
+            )
 
         self.__session = requests.Session()
         self.__session.mount(self.__base_url, HitronHTTPAdapter(fingerprint))
 
-
     def login(self, usr, pwd, force=False):
-        r = self.__session.get(self.__base_url, allow_redirects=False, verify=False, timeout=2)
+        r = self.__session.get(
+            self.__base_url, allow_redirects=False, verify=False, timeout=2
+        )
         r.raise_for_status()
-        assert 'preSession' in self.__session.cookies
+        assert "preSession" in self.__session.cookies
 
-        r = self.__session.post(urljoin(self.__base_url, 'goform/login'), allow_redirects=False, verify=False, timeout=10, data={
-            'usr': usr,
-            'pwd': pwd,
-            'forcelogoff': '0' if not force else '1',
-            'preSession': self.__session.cookies['preSession'],
-        })
+        r = self.__session.post(
+            urljoin(self.__base_url, "goform/login"),
+            allow_redirects=False,
+            verify=False,
+            timeout=10,
+            data={
+                "usr": usr,
+                "pwd": pwd,
+                "forcelogoff": "0" if not force else "1",
+                "preSession": self.__session.cookies["preSession"],
+            },
+        )
         r.raise_for_status()
 
-        if r.text == 'success':
+        if r.text == "success":
             return
         else:
             raise RuntimeError(r.text)
 
-
     def get_data(self, dataset):
-        r = self.__session.get(urljoin(self.__base_url, f'data/{dataset}.asp'), allow_redirects=False, verify=False, timeout=2)
+        r = self.__session.get(
+            urljoin(self.__base_url, f"data/{dataset}.asp"),
+            allow_redirects=False,
+            verify=False,
+            timeout=2,
+        )
         r.raise_for_status()
         if r.status_code != 200:
-            raise PermissionError('Not logged in')
+            raise PermissionError("Not logged in")
         return r.json()
 
-
     def logout(self):
-        r = self.__session.post(urljoin(self.__base_url, 'goform/logout'), allow_redirects=False, verify=False, timeout=2, data={'data': 'byebye'})
+        r = self.__session.post(
+            urljoin(self.__base_url, "goform/logout"),
+            allow_redirects=False,
+            verify=False,
+            timeout=2,
+            data={"data": "byebye"},
+        )
         r.raise_for_status()
 
 
@@ -146,12 +167,11 @@ def get_server_certificate_fingerprint(addr, timeout):
         with ctx.wrap_socket(sock) as sslsock:
             crt = sslsock.getpeercert(True)
             digest = hashlib.sha256(crt).digest()
-            return binascii.hexlify(digest, ':').decode('ascii')
-
+            return binascii.hexlify(digest, ":").decode("ascii")
 
 
 class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
-    '''
+    """
     Relaxes potential default OpenSSL configuration to allow communication with
     the cable modem (which uses a 1024-bit RSA key, rejected by modern OpenSSL
     configurations).
@@ -161,7 +181,7 @@ class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
     command:
 
     openssl x509 -in cert.crt -noout -sha256 -fingerprint
-    '''
+    """
 
     def __init__(self, fingerprint, **kwargs):
         self.__fingerprint = fingerprint
@@ -169,14 +189,12 @@ class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
 
         super().__init__(**kwargs)
 
-
     @classmethod
     def create_context(klass):
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
-        ctx.set_ciphers('DEFAULT@SECLEVEL=1')
+        ctx.set_ciphers("DEFAULT@SECLEVEL=1")
         return ctx
-
 
     def init_poolmanager(self, connections, maxsize, block=False):
         self.poolmanager = requests.packages.urllib3.poolmanager.PoolManager(
