@@ -33,3 +33,8 @@ repos:
     - poetry export --with=dev -E freeipa-vault -E container | safety check --stdin
     language: system
     files: pyproject.toml
+- repo: https://github.com/python-poetry/poetry
+  rev: 1.3.2
+  hooks:
+  - id: poetry-check
+  - id: poetry-lock
