@@ -103,14 +103,14 @@ class Client:
         self.__base_url = f"https://{host}/"
 
         if not fingerprint:
-            LOGGER.warn(
+            LOGGER.warning(
                 (
                     "Communication with <%s> is insecure because the TLS server"
                     " certificate fingerprint was not specified."
                 ),
                 host,
             )
-            LOGGER.warn(
+            LOGGER.warning(
                 "Fingerprint of <%s> is %s",
                 host,
                 get_server_certificate_fingerprint((host, 443), timeout=5),
