@@ -308,7 +308,7 @@ $ podman run --name hitron-exporter --net=host --rm --replace --env GUNICORN_CMD
 Run a development web server:
 
 ```
-$ FLASK_DEBUG=1 FLASK_APP=hitron_exporter:app poetry run flask run
+$ poetry run flask run --debug
 ```
 
 Probe for metrics:
