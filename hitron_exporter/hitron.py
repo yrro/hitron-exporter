@@ -1,5 +1,6 @@
 import binascii
 import hashlib
+from enum import Enum
 from logging import getLogger
 import ssl
 import socket
@@ -14,85 +15,89 @@ LOGGER = getLogger(__name__)
 
 
 class Client:
-    DATASET_USER_TYPE = "user_type"
-    # {'UserType': '1'}
+    class Dataset(Enum):
+        USER_TYPE = "user_type"
+        # {'UserType': '1'}
 
-    DATASET_SYSTEM_MODEL = "system_model"
-    # {'modelName': 'CGNV4-FX4', 'skipWizard': '1'}
+        SYSTEM_MODEL = "system_model"
+        # {'modelName': 'CGNV4-FX4', 'skipWizard': '1'}
 
-    DATASET_SYSINFO = "getSysInfo"
-    # [{'LRecPkt': '12.12M Bytes',
-    #   'LSendPkt': '40.14M Bytes',
-    #   'WRecPkt': '40.25M Bytes',
-    #   'WSendPkt': '11.77M Bytes',
-    #   'aftrAddr': '',
-    #   'aftrName': '',
-    #   'delegatedPrefix': '',
-    #   'hwVersion': '2D',
-    #   'lanIPv6Addr': '',
-    #   'lanIp': '192.0.2.0/24',
-    #   'rfMac': '84:0B:7C:01:02:03',
-    #   'serialNumber': 'ABC123',
-    #   'swVersion': '4.5.10.201-CD-UPC',
-    #   'systemTime': 'Fri Jun 17, 2022, 17:09:10',
-    #   'systemUptime': '00 Days,05 Hours,38 Minutes,47 Seconds',
-    #   'timezone': '1',
-    #   'wanIp': '203.0.113.1/24'}]
+        SYSINFO = "getSysInfo"
+        # [{'LRecPkt': '12.12M Bytes',
+        #   'LSendPkt': '40.14M Bytes',
+        #   'WRecPkt': '40.25M Bytes',
+        #   'WSendPkt': '11.77M Bytes',
+        #   'aftrAddr': '',
+        #   'aftrName': '',
+        #   'delegatedPrefix': '',
+        #   'hwVersion': '2D',
+        #   'lanIPv6Addr': '',
+        #   'lanIp': '192.0.2.0/24',
+        #   'rfMac': '84:0B:7C:01:02:03',
+        #   'serialNumber': 'ABC123',
+        #   'swVersion': '4.5.10.201-CD-UPC',
+        #   'systemTime': 'Fri Jun 17, 2022, 17:09:10',
+        #   'systemUptime': '00 Days,05 Hours,38 Minutes,47 Seconds',
+        #   'timezone': '1',
+        #   'wanIp': '203.0.113.1/24'}]
 
-    DATASET_CMINIT = "getCMInit"
-    # [{'bpiStatus': 'AUTH:authorized, TEK:operational',
-    #   'dhcp': 'Success',
-    #   'downloadCfg': 'Success',
-    #   'eaeStatus': 'Secret',
-    #   'findDownstream': 'Success',
-    #   'hwInit': 'Success',
-    #   'networkAccess': 'Permitted',
-    #   'ranging': 'Success',
-    #   'registration': 'Success',
-    #   'timeOfday': 'Secret',
-    #   'trafficStatus': 'Enable'}]
+        CMINIT = "getCMInit"
+        # [{'bpiStatus': 'AUTH:authorized, TEK:operational',
+        #   'dhcp': 'Success',
+        #   'downloadCfg': 'Success',
+        #   'eaeStatus': 'Secret',
+        #   'findDownstream': 'Success',
+        #   'hwInit': 'Success',
+        #   'networkAccess': 'Permitted',
+        #   'ranging': 'Success',
+        #   'registration': 'Success',
+        #   'timeOfday': 'Secret',
+        #   'trafficStatus': 'Enable'}]
 
-    DATASET_DSINFO = "dsinfo"
-    # [{'channelId': '9',
-    #   'frequency': '426250000',
-    #   'modulation': '2',
-    #   'portId': '1',
-    #   'signalStrength': '17.400',
-    #   'snr': '40.946'},
-    #  ...]
+        DSINFO = "dsinfo"
+        # [{'channelId': '9',
+        #   'frequency': '426250000',
+        #   'modulation': '2',
+        #   'portId': '1',
+        #   'signalStrength': '17.400',
+        #   'snr': '40.946'},
+        #  ...]
 
-    DATASET_CMDOCSISWAN = "getCmDocsisWan"
-    # [{'CmGateway': '10.252.220.1',
-    #  'CmIpAddress': '10.252.220.125',
-    #  'CmIpLeaseDuration': '04 Days,09 Hours,47 Minutes,10 '
-    #                       'Seconds',
-    #  'CmNetMask': '255.255.252.0',
-    #  'Configname': 'Secret',
-    #  'NetworkAccess': 'Permitted'}],
+        CMDOCSISWAN = "getCmDocsisWan"
+        # [{'CmGateway': '10.252.220.1',
+        #  'CmIpAddress': '10.252.220.125',
+        #  'CmIpLeaseDuration': '04 Days,09 Hours,47 Minutes,10 '
+        #                       'Seconds',
+        #  'CmNetMask': '255.255.252.0',
+        #  'Configname': 'Secret',
+        #  'NetworkAccess': 'Permitted'}],
 
-    DATASET_USINFO = "usinfo"
-    # [{'bandwidth': '6400000',
-    #   'channelId': '2',
-    #   'frequency': '39400000',
-    #   'portId': '1',
-    #   'scdmaMode': 'ATDMA',
-    #   'signalStrength': '36.000'},
-    #  ...]
+        USINFO = "usinfo"
+        # [{'bandwidth': '6400000',
+        #   'channelId': '2',
+        #   'frequency': '39400000',
+        #   'portId': '1',
+        #   'scdmaMode': 'ATDMA',
+        #   'signalStrength': '36.000'},
+        #  ...]
 
-    DATASET_CONNECTINFO = "getConnectInfo"
-    # [{'comnum': 1,
-    #   'connectType': 'Self-assigned',
-    #   'hostName': 'Unknown',
-    #   'id': 4,
-    #   'interface': 'Ethernet',
-    #   'ipAddr': '192.0.2.16',
-    #   'ipType': 'IPv4',
-    #   'macAddr': '76:77:47:AE:A0:A1',
-    #   'online': 'active'},
-    #  ...]
+        CONNECTINFO = "getConnectInfo"
+        # [{'comnum': 1,
+        #   'connectType': 'Self-assigned',
+        #   'hostName': 'Unknown',
+        #   'id': 4,
+        #   'interface': 'Ethernet',
+        #   'ipAddr': '192.0.2.16',
+        #   'ipType': 'IPv4',
+        #   'macAddr': '76:77:47:AE:A0:A1',
+        #   'online': 'active'},
+        #  ...]
 
-    DATASET_TUNEFREQ = "getTuneFreq"
-    # [{'tunefreq': '426.250'}]
+        TUNEFREQ = "getTuneFreq"
+        # [{'tunefreq': '426.250'}]
+
+        def path(self) -> str:
+            return f"data/{self.value}.asp"
 
     def __init__(self, host: str, fingerprint: Optional[str]) -> None:
         self.__base_url = f"https://{host}/"
@@ -140,9 +145,9 @@ class Client:
         else:
             raise RuntimeError(r.text)
 
-    def get_data(self, dataset: str) -> Any:
+    def get_data(self, dataset: Dataset) -> Any:
         r = self.__session.get(
-            urljoin(self.__base_url, f"data/{dataset}.asp"),
+            urljoin(self.__base_url, dataset.path()),
             allow_redirects=False,
             verify=False,
             timeout=2,
