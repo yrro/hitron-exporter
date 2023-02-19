@@ -39,3 +39,6 @@ extend-ignore = [
     # See https://github.com/PyCQA/pycodestyle/issues/373
     "E203",
 ]
+
+[tool.mypy]
+strict = true
