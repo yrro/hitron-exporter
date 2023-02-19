@@ -1,3 +1,5 @@
+default_language_version:
+  python: python3
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.4.0
@@ -15,14 +17,12 @@ repos:
   - id: black
     args:
     - --preview
-    language_version: python3
 - repo: https://github.com/PyCQA/flake8
   rev: 6.0.0
   hooks:
   - id: flake8
     additional_dependencies:
     - Flake8-pyproject
-    language_version: python3
 - repo: local
   hooks:
   - id: safety-check
