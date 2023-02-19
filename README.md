@@ -144,7 +144,7 @@ the copy installed by Poetry.
 
 ## Transport security
 
-HTTPS is used to protect the confidentiality and integrity of communictions
+HTTPS is used to protect the confidentiality and integrity of communications
 with the CPE device, however the modem's TLS server certificate can't be
 verified in the usual way.
 
@@ -153,7 +153,7 @@ TLS server certificate against a known good fingerprint.
 
 When you probe for metrics without providing a `fingerprint` parameter, the
 exporter will log the fingerprint of the TLS server certificate that it
-recieves from the target.
+receives from the target.
 
 So all you need to do is take note of that log message, and then provide the
 fingerprint at probe time:
@@ -162,8 +162,8 @@ fingerprint at probe time:
 $ http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
-When a probe specifies `fingerprint`, the exporter will refuse to connect to
-connect to an attacker interposed between the exporter and the CPE device.
+When a probe specifies `fingerprint`, the exporter will refuse to connect to an
+attacker interposed between the exporter and the CPE device.
 
 ## Credential security
 
@@ -287,7 +287,7 @@ scrape_configs:
 This assumes you're running the exporter on the same machine as Prometheus. If
 not, adjust the replacement string for `__address__` as appropriate.
 
-If you're not using FreeIPA to store credentials, and you're OK with hardcoding
+If you're not using FreeIPA to store credentials, and you're OK with hard-coding
 the credentials into `prometheus.yml`, remove `ipa_vault_namespace` from the
 job's `params` and add `usr` and `pwd`. Note that the values for these
 attributes are lists, not strings; the username and password should be the sole
