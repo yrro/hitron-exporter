@@ -46,5 +46,6 @@ repos:
     name: mypy
     entry: poetry run mypy
     language: system
+    pass_filenames: false
     types:
     - python

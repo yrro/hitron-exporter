@@ -42,3 +42,4 @@ extend-ignore = [
 
 [tool.mypy]
 strict = true
+packages = "hitron_exporter"
