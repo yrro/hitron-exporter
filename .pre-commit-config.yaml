@@ -1,3 +1,8 @@
+ci:
+  skip:
+  - safety-check # safety, poetry not available
+  - poetry-lock # can't access PyPI (why does the poetry command work in this check though?)
+  - mypy # poetry not available
 default_language_version:
   python: python3
 repos:
