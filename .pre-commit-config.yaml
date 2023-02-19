@@ -1,8 +1,8 @@
 ci:
   skip:
-  - safety-check # safety, poetry not available
-  - poetry-lock # can't access PyPI (why does the poetry command work in this check though?)
-  - mypy # poetry not available
+  - safety-check # Requires system-wide installation of safety & poetry
+  - poetry-lock # Can't access PyPI
+  - mypy # Requires system-wide installation of poetry
 default_language_version:
   python: python3
 repos:
