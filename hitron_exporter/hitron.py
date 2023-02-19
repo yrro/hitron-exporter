@@ -204,7 +204,7 @@ class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
         super().__init__(**kwargs)
 
     @classmethod
-    def create_context(klass) -> ssl.SSLContext:
+    def create_context(cls) -> ssl.SSLContext:
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.set_ciphers("DEFAULT@SECLEVEL=1")
