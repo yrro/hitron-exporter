@@ -1,10 +1,16 @@
 import datetime
 from logging import getLogger
 import re
+from typing import Iterator, Optional
 
 import flask
+from flask.typing import ResponseReturnValue
 import prometheus_client
-import prometheus_client.core
+from prometheus_client.core import (
+    CounterMetricFamily,
+    GaugeMetricFamily,
+    InfoMetricFamily,
+)
 
 from . import hitron
 from . import ipavault
@@ -20,12 +26,12 @@ prometheus_client_app = prometheus_client.make_wsgi_app()
 
 
 @app.route("/metrics")
-def metrics():
+def metrics() -> ResponseReturnValue:
     return prometheus_client_app
 
 
 @app.route("/probe")
-def probe():
+def probe() -> ResponseReturnValue:
     global ipavault_credentials
     args = flask.request.args
 
@@ -38,11 +44,11 @@ def probe():
     force = bool(int(args.get("force", "0")))
 
     if args.get("usr") and args.get("pwd"):
-        client.login(args.get("usr"), args.get("pwd"), force)
+        client.login(args["usr"], args["pwd"], force)
     elif args.get("ipa_vault_namespace"):
         if ipavault_credentials is None:
             ipavault_credentials = ipavault.retrieve(
-                args.get("ipa_vault_namespace").split(":")
+                args["ipa_vault_namespace"].split(":")
             )
         try:
             client.login(**ipavault_credentials, force=force)
@@ -60,15 +66,17 @@ def probe():
         client.logout()
 
 
-class Collector:
-    def __init__(self, client):
+class Collector(prometheus_client.registry.Collector):
+    def __init__(self, client: hitron.Client) -> None:
         self.__dsinfo = client.get_data(client.DATASET_DSINFO)
         self.__usinfo = client.get_data(client.DATASET_USINFO)
         self.__sysinfo = client.get_data(client.DATASET_SYSINFO)
         self.__system_model = client.get_data(client.DATASET_SYSTEM_MODEL)
         self.__cminit = client.get_data(client.DATASET_CMINIT)
 
-    def collect(self):
+    def collect(
+        self,
+    ) -> Iterator[CounterMetricFamily | GaugeMetricFamily | InfoMetricFamily]:
         yield from self.collect_usinfo()
         yield from self.collect_dsinfo()
         yield from self.collect_uptime()
@@ -76,13 +84,13 @@ class Collector:
         yield from self.collect_sysinfo()
         yield from self.collect_docsis()
 
-    def collect_usinfo(self):
-        usinfo_sigstr = prometheus_client.core.GaugeMetricFamily(
+    def collect_usinfo(self) -> Iterator[GaugeMetricFamily]:
+        usinfo_sigstr = GaugeMetricFamily(
             "hitron_channel_upstream_signal_strength_dbmv",
             "",
             labels=["port", "channel", "frequency"],
         )
-        usinfo_bw = prometheus_client.core.GaugeMetricFamily(
+        usinfo_bw = GaugeMetricFamily(
             "hitron_channel_upstream_bandwidth",
             "",
             labels=["port", "channel", "frequency"],
@@ -96,13 +104,13 @@ class Collector:
         yield usinfo_sigstr
         yield usinfo_bw
 
-    def collect_dsinfo(self):
-        dsinfo_sigstr = prometheus_client.core.GaugeMetricFamily(
+    def collect_dsinfo(self) -> Iterator[GaugeMetricFamily]:
+        dsinfo_sigstr = GaugeMetricFamily(
             "hitron_channel_downstream_signal_strength_dbmv",
             "",
             labels=["port", "channel", "frequency"],
         )
-        dsinfo_snr = prometheus_client.core.GaugeMetricFamily(
+        dsinfo_snr = GaugeMetricFamily(
             "hitron_channel_downstream_snr", "", labels=["port", "channel", "frequency"]
         )
 
@@ -114,7 +122,7 @@ class Collector:
         yield dsinfo_sigstr
         yield dsinfo_snr
 
-    def collect_uptime(self):
+    def collect_uptime(self) -> Iterator[CounterMetricFamily]:
         m = re.match(
             r"(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds",
             self.__sysinfo[0]["systemUptime"],
@@ -126,12 +134,12 @@ class Collector:
                 minutes=int(m.group(3)),
                 seconds=int(m.group(4)),
             )
-            yield prometheus_client.core.CounterMetricFamily(
+            yield CounterMetricFamily(
                 "hitron_system_uptime_seconds_total", "", value=td.total_seconds()
             )
 
-    def collect_network(self):
-        nw_tx = prometheus_client.core.CounterMetricFamily(
+    def collect_network(self) -> Iterator[CounterMetricFamily]:
+        nw_tx = CounterMetricFamily(
             "hitron_network_transmit_bytes", "", labels=["device"]
         )
 
@@ -145,7 +153,7 @@ class Collector:
 
         yield nw_tx
 
-        nw_rx = prometheus_client.core.CounterMetricFamily(
+        nw_rx = CounterMetricFamily(
             "hitron_network_receive_bytes", "", labels=["device"]
         )
 
@@ -159,7 +167,7 @@ class Collector:
 
         yield nw_rx
 
-    def parse_pkt(self, pkt):
+    def parse_pkt(self, pkt: str) -> Optional[float]:
         m = re.match(r"(\d+(?:\.\d+)?)([A-Z]?) Bytes", pkt)
         if not m:
             LOGGER.error("Couldn't parse %r as pkt", pkt)
@@ -177,8 +185,8 @@ class Collector:
 
         return float(m.group(1)) * factor
 
-    def collect_sysinfo(self):
-        yield prometheus_client.core.InfoMetricFamily(
+    def collect_sysinfo(self) -> Iterator[InfoMetricFamily]:
+        yield InfoMetricFamily(
             "hitron_system",
             "",
             value={
@@ -189,11 +197,11 @@ class Collector:
             },
         )
 
-    def collect_docsis(self):
+    def collect_docsis(self) -> Iterator[InfoMetricFamily]:
         bpi = {}
         for element in self.__cminit[0]["bpiStatus"].split(","):
             k, _, v = element.strip().partition(":")
             bpi[k.lower()] = v.lower()
-        yield prometheus_client.core.InfoMetricFamily(
+        yield InfoMetricFamily(
             "hitron_cm_bpi", "Cable Modem Baseline Privacy Interface", value=bpi
         )

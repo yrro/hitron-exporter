@@ -3,9 +3,11 @@ import hashlib
 from logging import getLogger
 import ssl
 import socket
+from typing import Any, Optional
 from urllib.parse import urljoin
 
 import requests
+import urllib3
 
 
 LOGGER = getLogger(__name__)
@@ -92,7 +94,7 @@ class Client:
     DATASET_TUNEFREQ = "getTuneFreq"
     # [{'tunefreq': '426.250'}]
 
-    def __init__(self, host, fingerprint):
+    def __init__(self, host: str, fingerprint: Optional[str]) -> None:
         self.__base_url = f"https://{host}/"
 
         if not fingerprint:
@@ -112,7 +114,7 @@ class Client:
         self.__session = requests.Session()
         self.__session.mount(self.__base_url, HitronHTTPAdapter(fingerprint))
 
-    def login(self, usr, pwd, force=False):
+    def login(self, usr: str, pwd: str, force: bool = False) -> None:
         r = self.__session.get(
             self.__base_url, allow_redirects=False, verify=False, timeout=2
         )
@@ -138,7 +140,7 @@ class Client:
         else:
             raise RuntimeError(r.text)
 
-    def get_data(self, dataset):
+    def get_data(self, dataset: str) -> Any:
         r = self.__session.get(
             urljoin(self.__base_url, f"data/{dataset}.asp"),
             allow_redirects=False,
@@ -150,7 +152,7 @@ class Client:
             raise PermissionError("Not logged in")
         return r.json()
 
-    def logout(self):
+    def logout(self) -> None:
         r = self.__session.post(
             urljoin(self.__base_url, "goform/logout"),
             allow_redirects=False,
@@ -163,12 +165,16 @@ class Client:
 
 # We can't use ssl.get_server_certificate because it hardcodes an SSLContext
 # that is not lenient enough.
-def get_server_certificate_fingerprint(addr, timeout):
+def get_server_certificate_fingerprint(addr: tuple[str, int], timeout: int) -> str:
     ctx = HitronHTTPAdapter.create_context()
     ctx.verify_mode = ssl.CERT_NONE
     with socket.create_connection(addr, timeout=timeout) as sock:
         with ctx.wrap_socket(sock) as sslsock:
             crt = sslsock.getpeercert(True)
+            if not crt:
+                raise RuntimeError(
+                    "TLS server certificate missing; this should not be possible!"
+                )
             digest = hashlib.sha256(crt).digest()
             return binascii.hexlify(digest, ":").decode("ascii")
 
@@ -186,21 +192,27 @@ class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
     openssl x509 -in cert.crt -noout -sha256 -fingerprint
     """
 
-    def __init__(self, fingerprint, **kwargs):
+    def __init__(self, fingerprint: Optional[str], **kwargs: Any) -> None:
         self.__fingerprint = fingerprint
         self.__context = HitronHTTPAdapter.create_context()
 
         super().__init__(**kwargs)
 
     @classmethod
-    def create_context(klass):
+    def create_context(klass) -> ssl.SSLContext:
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.set_ciphers("DEFAULT@SECLEVEL=1")
         return ctx
 
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = requests.packages.urllib3.poolmanager.PoolManager(
+    def init_poolmanager(
+        self,
+        connections: int,
+        maxsize: int,
+        block: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        self.poolmanager = urllib3.poolmanager.PoolManager(
             num_pools=connections,
             maxsize=maxsize,
             block=block,
