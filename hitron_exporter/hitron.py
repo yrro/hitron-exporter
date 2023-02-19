@@ -218,4 +218,5 @@ class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
             block=block,
             assert_fingerprint=self.__fingerprint,
             ssl_context=self.__context,
+            **kwargs,
         )
