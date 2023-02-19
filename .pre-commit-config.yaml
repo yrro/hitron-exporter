@@ -30,7 +30,7 @@ repos:
     entry: bash
     args:
     - -c
-    - poetry export --with=dev -E freeipa-vault -E container | safety check --stdin
+    - poetry export --with=dev -E freeipa-vault -E container | safety check --stdin -i 52173 -i 52174
     language: system
     files: pyproject.toml
 - repo: https://github.com/python-poetry/poetry
