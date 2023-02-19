@@ -1,6 +1,6 @@
 from logging import getLogger
 import os
-from typing import Any
+from typing import Any, Union
 
 
 LOGGER = getLogger(__name__)
@@ -57,7 +57,7 @@ def maybe_finalize_api() -> None:
 
 
 def _retrieve(vault_namespace: list[str], vault_name: str) -> str:
-    kwargs: dict[str, bool | str] = {}
+    kwargs: dict[str, Union[bool, str]] = {}
     if vault_namespace[0] == "shared":
         kwargs["shared"] = True
     elif vault_namespace[0] == "user":
