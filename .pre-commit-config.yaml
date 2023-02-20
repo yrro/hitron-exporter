@@ -1,8 +1,3 @@
-ci:
-  skip:
-  - safety-check # Requires system-wide installation of safety & poetry
-  - poetry-lock # Can't access PyPI
-  - mypy # Requires system-wide installation of poetry
 default_language_version:
   python: python3
 repos:
