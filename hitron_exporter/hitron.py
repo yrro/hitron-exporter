@@ -142,7 +142,6 @@ class Client:
         url: Any,
         fields: Any = None,
         headers: Any = None,
-        inject_presession_cookie: bool = False,
         **urlopen_kw: Any,
     ) -> Any:
         """
@@ -165,19 +164,6 @@ class Client:
             # XXX will throw away Cookies/Cookies2 headers passed in
             headers |= dummy_request.unredirected_hdrs
 
-        if inject_presession_cookie:
-            LOGGER.debug("Adding field %r into %r to %r", "preSession", method, url)
-            try:
-                presession_cookie = next(
-                    (c for c in self.__cookies if c.name == "preSession"),
-                )
-            except StopIteration:
-                raise RuntimeError("preSession cookie not in jar") from None
-            else:
-                if fields is None:
-                    fields = {}
-                fields[presession_cookie.name] = presession_cookie.value
-
         response = self.__http.request(method, url, fields, headers, **urlopen_kw)  # type: ignore [no-untyped-call]
         # XXX we will lose cookies from any responses in the response chain except the
         # final response.
@@ -195,6 +181,13 @@ class Client:
         )
         assert r.status == 302
 
+        try:
+            presession_cookie = next(
+                (c for c in self.__cookies if c.name == "preSession"),
+            )
+        except StopIteration:
+            raise RuntimeError("preSession cookie not in jar") from None
+
         r = self.http_request(
             "POST",
             urljoin(self.__base_url, "goform/login"),
@@ -202,8 +195,8 @@ class Client:
                 "usr": usr,
                 "pwd": pwd,
                 "forcelogoff": "0" if not force else "1",
+                presession_cookie.name: presession_cookie.value,
             },
-            inject_presession_cookie=True,
         )
         assert r.status == 200
 
