@@ -127,7 +127,7 @@ If you're not into containers, you need [Poetry](https://python-poetry.org/)
 which will take care of creating a venv, installing dependencies, etc.
 
 ```
-$ poetry install
+$ poetry install --only=main
 
 $ poetry run gunicorn -b 0.0.0.0:9938 hitron_exporter:app
 ```
@@ -136,11 +136,8 @@ Once the exporter is running, use an HTTP client such as
 [HTTPie](https://httpie.io/) to probe for metrics:
 
 ```
-$ http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2
+$ poetry run http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2
 ```
-
-If you don't have HTTPie installed, prepend `poetry run` to that command to use
-the copy installed by Poetry.
 
 ## Transport security
 
@@ -174,10 +171,8 @@ the credentials in vaults associated with a service.
 This requires a few extra libraries which are installed when you run:
 
 ```
-$ poetry install -E freeipa-vault
+$ poetry install --only=main -E freeipa-vault
 ```
-
-(These are included in the container image by default).
 
 Create the following objects in the FreeIPA directory:
 
@@ -305,7 +300,13 @@ $ podman run --name hitron-exporter --net=host --rm --replace --env GUNICORN_CMD
 ```
 ## How to develop
 
-Run a development web server:
+Install development dependencies:
+
+```
+$ poetry install --with=dev
+```
+
+Run a development web server with hot code reloading:
 
 ```
 $ poetry run flask run --debug
@@ -316,6 +317,12 @@ Probe for metrics:
 ```
 $ poetry run http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
+
+Before your first commit, install [pre-commit](https://pre-commit.com/) and run
+`pre-commit install`; this will configure your clone to run a variety of checks
+and you'll only be able to commit if they pass. If they don't work on your
+machine for some reason you can tell Git to let you commit anyway with `git
+commit -n`.
 
 ## Building the container image
 
