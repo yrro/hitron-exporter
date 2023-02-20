@@ -2,6 +2,8 @@ name: Build & publish container image
 
 on:
 
+  pull_request:
+
   push:
     branches:
     - master
