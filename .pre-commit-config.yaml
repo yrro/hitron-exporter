@@ -39,6 +39,7 @@ repos:
   - id: poetry-lock
     args:
     - --check
+  files: ^pyproject\.toml$
 - repo: local
   hooks:
   - id: mypy
