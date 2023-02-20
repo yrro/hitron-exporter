@@ -205,7 +205,6 @@ class Client:
             # Observed error messages:
             #   b"Repeat Login"
             #   b"Wrong Credentials."
-            return
             raise RuntimeError(r.data.decode("ascii"))
 
     def get_data(self, dataset: Dataset) -> Any:
