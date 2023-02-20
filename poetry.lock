@@ -4,7 +4,7 @@
 name = "certifi"
 version = "2022.12.7"
 description = "Python package for providing Mozilla's CA Bundle."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
@@ -93,7 +93,7 @@ pycparser = "*"
 name = "charset-normalizer"
 version = "3.0.1"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 files = [
@@ -411,7 +411,7 @@ test = ["pytest", "pytest-httpbin (>=0.0.6)", "pytest-lazy-fixture (>=0.0.6)", "
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 files = [
@@ -996,7 +996,7 @@ test = ["coverage", "pytest"]
 name = "requests"
 version = "2.28.2"
 description = "Python HTTP for Humans."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7, <4"
 files = [
@@ -1164,21 +1164,6 @@ files = [
 ]
 
 [[package]]
-name = "types-requests"
-version = "2.28.11.13"
-description = "Typing stubs for requests"
-category = "dev"
-optional = false
-python-versions = "*"
-files = [
-    {file = "types-requests-2.28.11.13.tar.gz", hash = "sha256:3fd332842e8759ea5f7eb7789df8aa772ba155216ccf10ef4aa3b0e5b42e1b46"},
-    {file = "types_requests-2.28.11.13-py3-none-any.whl", hash = "sha256:94896f6f8e9f3db11e422c6e3e4abbc5d7ccace853eac74b23bdd65eeee3cdee"},
-]
-
-[package.dependencies]
-types-urllib3 = "<1.27"
-
-[[package]]
 name = "types-urllib3"
 version = "1.26.25.6"
 description = "Typing stubs for urllib3"
@@ -1260,4 +1245,4 @@ freeipa-vault = ["ipaclient", "ipapython"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "638343103314018a80163ba3132a7f527eed9cfe57953f4dd6c1507fe1b20b79"
+content-hash = "3069ab588798029e81e04de354d1c835735d4d59025e8fa8d96a3437f89b14f8"

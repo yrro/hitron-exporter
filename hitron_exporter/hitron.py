@@ -1,13 +1,15 @@
 import binascii
-import hashlib
 from enum import Enum
+import hashlib
+import http.cookiejar
+import json
 from logging import getLogger
 import ssl
 import socket
 from typing import Any, Optional
 from urllib.parse import urljoin
+import urllib.request
 
-import requests
 import urllib3
 
 
@@ -101,80 +103,147 @@ class Client:
 
     def __init__(self, host: str, fingerprint: Optional[str]) -> None:
         self.__base_url = f"https://{host}/"
+        ssl_context = self.__create_ssl_context()
 
         if not fingerprint:
             LOGGER.warning(
                 (
-                    "Communication with <%s> is insecure because the TLS server"
-                    " certificate fingerprint was not specified."
+                    "Communication with <%s> is insecure because the expected TLS"
+                    " server certificate fingerprint was not specified. The host"
+                    " presented a certificate with the following fingerprint: %r"
                 ),
                 host,
-            )
-            LOGGER.warning(
-                "Fingerprint of <%s> is %s",
-                host,
-                get_server_certificate_fingerprint((host, 443), timeout=5),
+                _get_server_certificate_fingerprint((host, 443), 5, ssl_context),
             )
 
-        self.__session = requests.Session()
-        self.__session.mount(self.__base_url, HitronHTTPAdapter(fingerprint))
+        self.__http = urllib3.PoolManager(
+            retries=0,
+            timeout=5.0,
+            assert_fingerprint=fingerprint,
+            ssl_context=ssl_context,
+        )
+        self.__cookies = http.cookiejar.CookieJar()
+
+    @classmethod
+    def __create_ssl_context(cls) -> ssl.SSLContext:
+        """
+        An SSLContext for communication with the cable modem which uses a 1024-bit RSA
+        key, rejected by modern OpenSSL configurations.
+        """
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        ctx.set_ciphers("DEFAULT@SECLEVEL=1")
+        return ctx
+
+    def http_request(
+        self,
+        method: Any,
+        url: Any,
+        fields: Any = None,
+        headers: Any = None,
+        inject_presession_cookie: bool = False,
+        **urlopen_kw: Any,
+    ) -> Any:
+        """
+        urllib3 wrapper that uses a CookieJar to provide rudimentary cookie handling.
+        """
+        dummy_request = urllib.request.Request(url)
+        self.__cookies.add_cookie_header(dummy_request)
+
+        if dummy_request.unredirected_hdrs:
+            LOGGER.debug(
+                "Adding headers %r into %r to %r",
+                dummy_request.unredirected_hdrs,
+                method,
+                url,
+            )
+            if headers is None:
+                headers = {}
+            else:
+                headers = headers.copy()
+            # XXX will throw away Cookies/Cookies2 headers passed in
+            headers |= dummy_request.unredirected_hdrs
+
+        if inject_presession_cookie:
+            LOGGER.debug("Adding field %r into %r to %r", "preSession", method, url)
+            try:
+                presession_cookie = next(
+                    (c for c in self.__cookies if c.name == "preSession"),
+                )
+            except StopIteration:
+                raise RuntimeError("preSession cookie not in jar") from None
+            else:
+                if fields is None:
+                    fields = {}
+                fields[presession_cookie.name] = presession_cookie.value
+
+        response = self.__http.request(method, url, fields, headers, **urlopen_kw)  # type: ignore [no-untyped-call]
+        # XXX we will lose cookies from any responses in the response chain except the
+        # final response.
+        self.__cookies.extract_cookies(response, dummy_request)
+        return response
 
     def login(self, usr: str, pwd: str, force: bool = False) -> None:
-        r = self.__session.get(
-            self.__base_url, allow_redirects=False, verify=False, timeout=2
-        )
-        r.raise_for_status()
-        assert "preSession" in self.__session.cookies
+        # / sets a preSession cookie that must be included in the POST to the login form
+        # to avoid a 'session timeout expired' error
 
-        r = self.__session.post(
+        r = self.http_request(
+            "GET",
+            self.__base_url,
+            retries=False,
+        )
+        assert r.status == 302
+
+        r = self.http_request(
+            "POST",
             urljoin(self.__base_url, "goform/login"),
-            allow_redirects=False,
-            verify=False,
-            timeout=10,
-            data={
+            fields={
                 "usr": usr,
                 "pwd": pwd,
                 "forcelogoff": "0" if not force else "1",
-                "preSession": self.__session.cookies["preSession"],
             },
+            inject_presession_cookie=True,
         )
-        r.raise_for_status()
+        assert r.status == 200
 
-        if r.text == "success":
+        # If another session is active then the response data will be b"Repeat Login"
+        if r.data != b"success":
+            # Observed error messages:
+            #   b"Repeat Login"
+            #   b"Wrong Credentials."
             return
-        else:
-            raise RuntimeError(r.text)
+            raise RuntimeError(r.data.decode("ascii"))
 
     def get_data(self, dataset: Dataset) -> Any:
-        r = self.__session.get(
+        r = self.http_request(
+            "GET",
             urljoin(self.__base_url, dataset.path()),
-            allow_redirects=False,
-            verify=False,
-            timeout=2,
         )
-        r.raise_for_status()
-        if r.status_code != 200:
-            raise PermissionError("Not logged in")
-        return r.json()
+        assert r.status == 200
+        if r.headers["Content-Type"] != "application/json":
+            raise RuntimeError("Not logged in")
+        return json.loads(r.data)
 
     def logout(self) -> None:
-        r = self.__session.post(
+        r = self.http_request(
+            "POST",
             urljoin(self.__base_url, "goform/logout"),
-            allow_redirects=False,
-            verify=False,
-            timeout=2,
-            data={"data": "byebye"},
+            fields={"data": "byebye"},
         )
-        r.raise_for_status()
+        assert r.status == 200
 
 
-# We can't use ssl.get_server_certificate because it hardcodes an SSLContext
-# that is not lenient enough.
-def get_server_certificate_fingerprint(addr: tuple[str, int], timeout: int) -> str:
-    ctx = HitronHTTPAdapter.create_context()
-    ctx.verify_mode = ssl.CERT_NONE
+def _get_server_certificate_fingerprint(
+    addr: tuple[str, int], timeout: int, ssl_context: ssl.SSLContext
+) -> str:
+    """
+    Ideally we'd call ssl.get_server_certificate, but that function
+    does not provide a way for us to provide our own SSLContext, so
+    we have to re-implement it.
+    """
     with socket.create_connection(addr, timeout=timeout) as sock:
-        with ctx.wrap_socket(sock) as sslsock:
+        with ssl_context.wrap_socket(sock) as sslsock:
             crt = sslsock.getpeercert(True)
             if not crt:
                 raise RuntimeError(
@@ -182,46 +251,3 @@ def get_server_certificate_fingerprint(addr: tuple[str, int], timeout: int) -> s
                 )
             digest = hashlib.sha256(crt).digest()
             return binascii.hexlify(digest, ":").decode("ascii")
-
-
-class HitronHTTPAdapter(requests.adapters.HTTPAdapter):
-    """
-    Relaxes potential default OpenSSL configuration to allow communication with
-    the cable modem (which uses a 1024-bit RSA key, rejected by modern OpenSSL
-    configurations).
-
-    Verifies the cable modem's TLS server certificate against the specified
-    fingerprint. The fingerprint may be produced from the certificate with the
-    command:
-
-    openssl x509 -in cert.crt -noout -sha256 -fingerprint
-    """
-
-    def __init__(self, fingerprint: Optional[str], **kwargs: Any) -> None:
-        self.__fingerprint = fingerprint
-        self.__context = HitronHTTPAdapter.create_context()
-
-        super().__init__(**kwargs)
-
-    @classmethod
-    def create_context(cls) -> ssl.SSLContext:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.set_ciphers("DEFAULT@SECLEVEL=1")
-        return ctx
-
-    def init_poolmanager(
-        self,
-        connections: int,
-        maxsize: int,
-        block: bool = False,
-        **kwargs: Any,
-    ) -> None:
-        self.poolmanager = urllib3.poolmanager.PoolManager(
-            num_pools=connections,
-            maxsize=maxsize,
-            block=block,
-            assert_fingerprint=self.__fingerprint,
-            ssl_context=self.__context,
-            **kwargs,
-        )

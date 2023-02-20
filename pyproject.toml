@@ -6,7 +6,6 @@ authors = ["Sam Morris <sam@robots.org.uk>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-requests = "^2.28.0"
 Flask = "^2.1.2"
 prometheus-client = "^0.16.0"
 gunicorn = {version = "^20.1.0", optional = true}
@@ -16,12 +15,13 @@ cryptography = "<38"
 # required by ipalib, but we need to specify here in order to enable the ldap extra
 ipapython = {version = "^4.8.9", optional = true, extras = ["ldap"]}
 ipaclient = {version = "^4.8.9", optional = true}
+urllib3 = "^1.26.14"
 
 [tool.poetry.group.dev.dependencies]
 httpie = "^3.2.1"
 mypy = "^1.0.1"
-types-requests = "^2.28.11.13"
 python-dotenv = "^0.21.1"
+types-urllib3 = "^1.26.25.6"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
