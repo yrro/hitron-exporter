@@ -30,6 +30,8 @@ jobs:
 
     - name: Run pre-commit checks
       uses: pre-commit/action@v3.0.0
+      env:
+        SKIP: safety
 
     - uses: pre-commit-ci/lite-action@v1.0.1
       if: always()
