@@ -212,9 +212,10 @@ class Client:
             "GET",
             urljoin(self.__base_url, dataset.path()),
         )
-        assert r.status == 200
-        if r.headers["Content-Type"] != "application/json":
+        if r.status == 302:
             raise RuntimeError("Not logged in")
+        assert r.status == 200
+        assert r.headers["Content-Type"] == "application/json"
         return json.loads(r.data)
 
     def logout(self) -> None:
