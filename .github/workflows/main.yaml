@@ -33,10 +33,12 @@ jobs:
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.url=https://github.com/${{ github.repository }}
 
-    - name: Extract base image information from image
-      run: |
-        echo image_base_ref=$(buildah inspect --type=image ghcr.io/yrro/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_ENV
-        echo image_base_digest=$(buildah inspect --type=image $image_base_ref | jq '.FromImageDigest' -r) >> $GITHUB_ENV
+    - name: Extract base image from image
+      run: echo image_base_ref=$(buildah inspect --type=image ghcr.io/yrro/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_ENV
+      shell: bash
+
+    - name: Extract digest from base image
+      run: echo image_base_digest=$(buildah inspect --type=image $image_base_ref | jq '.FromImageDigest' -r) >> $GITHUB_ENV
       shell: bash
 
     - name: Apply base image labels
