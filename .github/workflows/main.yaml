@@ -18,6 +18,16 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Construct PEP 440 version identifier
+      run: echo version_pep440=$(git describe --match='version-marker' | sed s/version-marker-/0.1.0.dev/ | sed 's/-g/+git./') >> $GITHUB_ENV
+      shell: bash
+
+    - name: Bump version number
+      run: sed -i -e '0,/"0\.1\.0"/ { s//"'${version_pep440}'"/ }' pyproject.toml
+      shell: bash
 
     - name: Build image
       uses: redhat-actions/buildah-build@v2
