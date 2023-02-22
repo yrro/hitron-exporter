@@ -33,8 +33,9 @@ jobs:
       uses: redhat-actions/buildah-build@v2
       with:
         image: ghcr.io/yrro/hitron-exporter
-        containerfiles: |
-          ./Containerfile
+        containerfiles: Containerfile
+        build-args: |
+          nproc: 2
         labels: |
           org.opencontainers.image.created=${{ env.date_rfc_5322 }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}

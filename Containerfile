@@ -35,7 +35,9 @@ RUN python3 -m venv /opt/app-root/venv \
 
 COPY hitron_exporter hitron_exporter
 
-RUN python3 -m build -w
+ARG nproc=1
+
+RUN MAKEFLAGS=-j$nproc python3 -m build -w
 
 RUN /opt/app-root/venv/bin/python3 -m pip install --no-deps dist/*.whl
 
