@@ -838,6 +838,22 @@ files = [
 twisted = ["twisted"]
 
 [[package]]
+name = "prometheus-flask-exporter"
+version = "0.22.2"
+description = "Prometheus metrics exporter for Flask"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "prometheus_flask_exporter-0.22.2-py3-none-any.whl", hash = "sha256:299c53dc068afe8c5510e17a8d2e50cfe22ae9cfe6c0755556ebd6fd9d0b3bd4"},
+    {file = "prometheus_flask_exporter-0.22.2.tar.gz", hash = "sha256:2a41b7fcc72a413f3023f5f1be6142b2023b8adb54454f660ba0fb5c8f98a29c"},
+]
+
+[package.dependencies]
+flask = "*"
+prometheus-client = "*"
+
+[[package]]
 name = "pyasn1"
 version = "0.4.8"
 description = "ASN.1 types and codecs"
@@ -1245,4 +1261,4 @@ freeipa-vault = ["ipaclient", "ipapython"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "3069ab588798029e81e04de354d1c835735d4d59025e8fa8d96a3437f89b14f8"
+content-hash = "0fe757f262f6a72aa00a6febea7abdcfb3fa1d102b29f6982e1b16032c690687"

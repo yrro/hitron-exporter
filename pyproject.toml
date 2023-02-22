@@ -16,6 +16,7 @@ cryptography = "<38"
 ipapython = {version = "^4.8.9", optional = true, extras = ["ldap"]}
 ipaclient = {version = "^4.8.9", optional = true}
 urllib3 = "^1.26.14"
+prometheus-flask-exporter = "^0.22.2"
 
 [tool.poetry.group.dev.dependencies]
 httpie = "^3.2.1"

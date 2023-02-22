@@ -5,12 +5,12 @@ import re
 from typing import Iterator, Optional
 
 import flask
+from prometheus_flask_exporter import PrometheusMetrics  # type: ignore [import]
 from flask.typing import ResponseReturnValue
 import prometheus_client
 from prometheus_client.core import (
     CounterMetricFamily,
     GaugeMetricFamily,
-    Info,
     InfoMetricFamily,
     Metric,
 )
@@ -24,20 +24,22 @@ LOGGER = getLogger(__name__)
 
 ipavault_credentials = None
 app = flask.Flask(__name__)
+metrics = PrometheusMetrics(app)
 
 prometheus_client_app = prometheus_client.make_wsgi_app()
 
 
 @app.before_first_request
 def info_metric() -> None:
-    info = Info(
-        "hitron_exporter_info", "Information about the versino of hitron-exporter"
+    metrics.info(
+        "hitron_exporter_info",
+        "Information about hitron-exporter itself",
+        version=metadata.version("hitron-exporter"),
     )
-    info.info({"version": metadata.version("hitron-exporter")})
 
 
 @app.route("/metrics")
-def metrics() -> ResponseReturnValue:
+def metrics_() -> ResponseReturnValue:
     return prometheus_client_app
 
 
