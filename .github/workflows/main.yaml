@@ -13,7 +13,8 @@ jobs:
     steps:
 
     - name: Record build timestamp
-      run: echo date_rfc_5322=$(date -R) >> $GITHUB_ENV
+      id: rfc_5322
+      run: echo date=$(date -R) >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Checkout
@@ -22,11 +23,12 @@ jobs:
         fetch-depth: 0
 
     - name: Construct PEP 440 version identifier
-      run: echo version_pep440=$(git describe --match='version-marker' | sed s/version-marker-/0.1.0.dev/ | sed 's/-g/+git./') >> $GITHUB_ENV
+      id: pep_440
+      run: echo version=$(git describe --match='version-marker' | sed s/version-marker-/0.1.0.dev/ | sed 's/-g/+git./') >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Bump version number
-      run: sed -i -e '0,/"0\.1\.0"/ { s//"'${version_pep440}'"/ }' pyproject.toml
+      run: sed -i -e '0,/"0\.1\.0"/ { s//"${{ steps.pep_440.outputs.version }}"/ }' pyproject.toml
       shell: bash
 
     - name: Build image
@@ -37,17 +39,19 @@ jobs:
         build-args: |
           nproc: 2
         labels: |
-          org.opencontainers.image.created=${{ env.date_rfc_5322 }}
+          org.opencontainers.image.created=${{ steps.rfc_5322.outputs.date }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.url=https://github.com/${{ github.repository }}
 
     - name: Extract base image from image
-      run: echo image_base_ref=$(buildah inspect --type=image ghcr.io/yrro/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_ENV
+      id: image_base_ref
+      run: echo ref=$(buildah inspect --type=image ghcr.io/yrro/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Extract digest from base image
-      run: echo image_base_digest=$(buildah inspect --type=image $image_base_ref | jq '.FromImageDigest' -r) >> $GITHUB_ENV
+      id: image_base_digest
+      run: echo digest=$(buildah inspect --type=image ${{ steps.image_base_ref.outputs.ref }} | jq '.FromImageDigest' -r) >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Create working container
@@ -57,8 +61,8 @@ jobs:
     - name: Apply base image labels
       run: |
         buildah config \
-          --label org.opencontainers.image.base.name="$image_base_ref" \
-          --label org.opencontainers.image.base.digest="$image_base_digest"\
+          --label org.opencontainers.image.base.name=${{ steps.image_base_ref.outputs.ref }} \
+          --label org.opencontainers.image.base.digest=${{ steps.image_base_digest.outputs.digest }} \
           w
       shell: bash
 
