@@ -1,4 +1,5 @@
 import datetime
+from importlib import metadata
 from logging import getLogger
 import re
 from typing import Iterator, Optional
@@ -9,6 +10,7 @@ import prometheus_client
 from prometheus_client.core import (
     CounterMetricFamily,
     GaugeMetricFamily,
+    Info,
     InfoMetricFamily,
     Metric,
 )
@@ -24,6 +26,14 @@ ipavault_credentials = None
 app = flask.Flask(__name__)
 
 prometheus_client_app = prometheus_client.make_wsgi_app()
+
+
+@app.before_first_request
+def info_metric() -> None:
+    info = Info(
+        "hitron_exporter_info", "Information about the versino of hitron-exporter"
+    )
+    info.info({"version": metadata.version("hitron-exporter")})
 
 
 @app.route("/metrics")
