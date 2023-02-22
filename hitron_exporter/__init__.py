@@ -12,7 +12,6 @@ from prometheus_client.core import (
     CounterMetricFamily,
     GaugeMetricFamily,
     InfoMetricFamily,
-    Metric,
 )
 
 from . import hitron
@@ -92,7 +91,7 @@ class Collector(prometheus_client.registry.Collector):
         self.__system_model = client.get_data(client.Dataset.SYSTEM_MODEL)
         self.__cminit = client.get_data(client.Dataset.CMINIT)
 
-    def collect(self) -> Iterator[Metric]:
+    def collect(self) -> Iterator[prometheus_client.Metric]:
         yield from self.collect_usinfo()
         yield from self.collect_dsinfo()
         yield from self.collect_uptime()
