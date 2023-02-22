@@ -1,7 +1,7 @@
 import datetime
 from logging import getLogger
 import re
-from typing import Iterator, Optional, Union
+from typing import Iterator, Optional
 
 import flask
 from flask.typing import ResponseReturnValue
@@ -10,6 +10,7 @@ from prometheus_client.core import (
     CounterMetricFamily,
     GaugeMetricFamily,
     InfoMetricFamily,
+    Metric,
 )
 
 from . import hitron
@@ -74,9 +75,7 @@ class Collector(prometheus_client.registry.Collector):
         self.__system_model = client.get_data(client.Dataset.SYSTEM_MODEL)
         self.__cminit = client.get_data(client.Dataset.CMINIT)
 
-    def collect(
-        self,
-    ) -> Iterator[Union[CounterMetricFamily, GaugeMetricFamily, InfoMetricFamily]]:
+    def collect(self) -> Iterator[Metric]:
         yield from self.collect_usinfo()
         yield from self.collect_dsinfo()
         yield from self.collect_uptime()
