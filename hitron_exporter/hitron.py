@@ -154,7 +154,7 @@ class Client:
         if dummy_request.unredirected_hdrs:
             LOGGER.debug(
                 "Adding headers %r into %r to %r",
-                dummy_request.unredirected_hdrs,
+                dummy_request.unredirected_hdrs.keys(),
                 method,
                 url,
             )
@@ -162,7 +162,7 @@ class Client:
                 headers = {}
             else:
                 headers = headers.copy()
-            # XXX will throw away Cookies/Cookies2 headers passed in
+            # XXX will throw away any existing Cookies/Cookies2 headers passed in
             headers |= dummy_request.unredirected_hdrs
 
         response = self.__http.request(method, url, fields, headers, **urlopen_kw)  # type: ignore [no-untyped-call]
