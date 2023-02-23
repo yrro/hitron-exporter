@@ -32,7 +32,6 @@ globals_: AppGlobals = {"ipavault_credentials": None}
 LOGGER = getLogger(__name__)
 
 app = flask.Flask(__name__)
-log_config.config(app)
 metrics = PrometheusMetrics(app, path=None)
 
 prometheus_client_app = prometheus_client.make_wsgi_app()

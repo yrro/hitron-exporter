@@ -1,71 +1,40 @@
-from logging import getLogger
-from logging.config import dictConfig
+import enum
+import logging
 import os
+from typing import Union
 
-import flask
+
+LOGGER = logging.getLogger(__name__)
 
 
-LOGGER = getLogger(__name__)
+class Host(enum.Enum):
+    UNKNOWN = enum.auto()
+    FLASK = enum.auto()
+    GUNICORN = enum.auto()
 
 
 def config_early() -> None:
     """
-    If we're running from the Flask development web server, configure logging before we
-    import any other modules which might configure logging (e.g., ipalib).
-    <https://flask.palletsprojects.com/en/2.2.x/logging/#basic-configuration>
+    Configure logging before anyone else has a chance. Try to obtain log level
+    from our host environment.
     """
 
-    if "FLASK_RUN_FROM_CLI" not in os.environ:
-        return
-
-    if getLogger().handlers:
-        LOGGER.warning(
-            "Resetting existing logging config (handlers were: %r)",
-            getLogger().handlers,
-        )
-
-    if int(os.environ.get("FLASK_DEBUG", "0")) == 0:
-        level = "INFO"
-    else:
-        level = "DEBUG"
-
-    dictConfig(
-        {
-            "version": 1,
-            "formatters": {
-                "default": {
-                    "format": "[%(levelname)s %(name)s] %(message)s",
-                },
-                "plain": {
-                    "format": "%(message)s",
-                },
-            },
-            "handlers": {
-                "default": {
-                    "class": "logging.StreamHandler",
-                    "stream": "ext://flask.logging.wsgi_errors_stream",
-                    "formatter": "default",
-                },
-                "plain": {
-                    "class": "logging.StreamHandler",
-                    "stream": "ext://flask.logging.wsgi_errors_stream",
-                    "formatter": "plain",
-                },
-            },
-            "root": {"level": level, "handlers": ["default"]},
-            "loggers": {
-                "werkzeug": {
-                    "level": level,
-                    "handlers": ["plain"],
-                    "propagate": False,
-                },
-            },
-        }
-    )
-
-
-def config(app: flask.Flask) -> None:
-    gunicorn_logger = getLogger("gunicorn.error")
+    level: Union[str, int]
+    gunicorn_logger = logging.getLogger("gunicorn.error")
     if gunicorn_logger.handlers:
-        app.logger.handlers = gunicorn_logger.handlers
-        app.logger.setLevel(gunicorn_logger.level)
+        host = Host.GUNICORN
+        level = gunicorn_logger.level
+    elif "FLASK_RUN_FROM_CLI" in os.environ:
+        host = Host.FLASK
+        if int(os.environ.get("FLASK_DEBUG", "0")):
+            level = "DEBUG"
+        else:
+            level = "INFO"
+    else:
+        host = Host.UNKNOWN
+        level = "INFO"
+
+    logging.basicConfig(level=level)
+
+    if host == Host.UNKNOWN:
+        LOGGER.warning("Unknown host environment; default log level to INFO")
