@@ -1,6 +1,7 @@
 from logging import getLogger
 import os
 from typing import Union
+from typing_extensions import TypedDict
 
 LOGGER = getLogger(__name__)
 
@@ -11,7 +12,10 @@ except ImportError:
 _api_finalized = False
 
 
-def retrieve(vault_namespace: list[str]) -> dict[str, str]:
+Credential = TypedDict("Credential", {"usr": str, "pwd": str})
+
+
+def retrieve(vault_namespace: list[str]) -> Credential:
     check_keytab_readable()
 
     maybe_finalize_api()

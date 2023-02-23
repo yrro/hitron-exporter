@@ -13,6 +13,7 @@ from prometheus_client.core import (
     GaugeMetricFamily,
     InfoMetricFamily,
 )
+from typing_extensions import TypedDict
 
 from . import hitron
 from . import ipavault
@@ -21,7 +22,11 @@ from . import ipavault
 LOGGER = getLogger(__name__)
 
 
-ipavault_credentials = None
+AppGlobals = TypedDict(
+    "AppGlobals", {"ipavault_credentials": Optional[ipavault.Credential]}
+)
+
+globals_: AppGlobals = {"ipavault_credentials": None}
 app = flask.Flask(__name__)
 metrics = PrometheusMetrics(app, path=None)
 
@@ -49,7 +54,6 @@ def metrics_() -> ResponseReturnValue:
 
 @app.route("/probe")
 def probe() -> ResponseReturnValue:
-    global ipavault_credentials
     args = flask.request.args
 
     try:
@@ -63,15 +67,18 @@ def probe() -> ResponseReturnValue:
     if args.get("usr") and args.get("pwd"):
         client.login(args["usr"], args["pwd"], force)
     elif args.get("ipa_vault_namespace"):
-        if ipavault_credentials is None:
-            ipavault_credentials = ipavault.retrieve(
-                args["ipa_vault_namespace"].split(":")
-            )
-        try:
-            client.login(**ipavault_credentials, force=force)
-        except PermissionError:
-            ipavault_credentials = None
-            raise
+        creds = globals_["ipavault_credentials"]
+        if creds is None:
+            creds = ipavault.retrieve(args["ipa_vault_namespace"].split(":"))
+
+        if creds is not None:
+            try:
+                client.login(**creds, force=force)
+            except PermissionError:
+                creds = None
+                raise
+            finally:
+                globals_["ipavault_credentials"] = creds
     else:
         return "Missing parameters: 'usr', 'pwd' or 'ipa_vault_namespace'", 400
 
