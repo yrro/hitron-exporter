@@ -1,12 +1,14 @@
 from logging import getLogger
 import os
-from typing import Any, Union
-
+from typing import Union
 
 LOGGER = getLogger(__name__)
 
-api: Any = None
-api_finalized = False
+try:
+    from ipalib import api  # type: ignore[import]
+except ImportError:
+    api = None
+_api_finalized = False
 
 
 def retrieve(vault_namespace: list[str]) -> dict[str, str]:
@@ -45,15 +47,21 @@ def check_keytab_readable() -> None:
 
 
 def maybe_finalize_api() -> None:
-    # Import ipalib lazily here, since it is an optional dependency
-    global api
-    from ipalib import api  # type: ignore [import]
+    if not api:
+        # ipalib failed to import at module scope. Trying to import it again
+        # will throw ImportError which will bubble up and be caught & logged by
+        # Flask.
+        import ipalib
 
-    global api_finalized
-    if not api_finalized:
+        # pyflakes warns that ipalib is imported but not used; the assertion
+        # statement silences that warning.
+        assert ipalib
+
+    global _api_finalized
+    if not _api_finalized:
         api.bootstrap(context="cli")
         api.finalize()
-        api_finalized = True
+        _api_finalized = True
 
 
 def _retrieve(vault_namespace: list[str], vault_name: str) -> str:
