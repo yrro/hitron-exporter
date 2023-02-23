@@ -162,12 +162,23 @@ class Client:
                 headers = {}
             else:
                 headers = headers.copy()
-            # XXX will throw away any existing Cookies/Cookies2 headers passed in
+
+            for h in ["Cookies", "Cookies2"]:
+                if h in headers and h in dummy_request.unredirected_hdrs:
+                    LOGGER.warning(
+                        (
+                            "Taking %r header from cookie jar and ignoring %r from"
+                            " headers argument"
+                        ),
+                        h,
+                        h,
+                    )
+
             headers |= dummy_request.unredirected_hdrs
 
         response = self.__http.request(method, url, fields, headers, **urlopen_kw)  # type: ignore [no-untyped-call]
-        # XXX we will lose cookies from any responses in the response chain except the
-        # final response.
+        # If urllib3 chases redirects then any cookies sent by non-final
+        # responses in the redirect chain will be thrown away by urllib3!
         self.__cookies.extract_cookies(response, dummy_request)
         return response
 
