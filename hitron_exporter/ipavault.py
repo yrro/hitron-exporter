@@ -27,6 +27,7 @@ def retrieve(vault_namespace: list[str]) -> Credential:
     if not api:
         raise RuntimeError("ipalib import package not available") from _api_import_error
 
+    # pylint: disable=no-member
     api.Backend.rpcclient.connect()
     try:
         return {
@@ -34,6 +35,7 @@ def retrieve(vault_namespace: list[str]) -> Credential:
             "pwd": _retrieve(vault_namespace, "pwd"),
         }
     finally:
+        # pylint: disable=no-member
         api.Backend.rpcclient.disconnect()
 
 
@@ -45,9 +47,10 @@ def check_keytab_readable() -> None:
     # check isn't perfect, because it won't catch the case where the client
     # keytab is in the default location & this environment variable is unset.
     try:
+        # pylint: disable=unspecified-encoding
         with open(os.environ["KRB5_CLIENT_KTNAME"]) as _:
             pass
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         LOGGER.exception(
             (
                 "The client keytab %r is not readable; we will not be able to retrieve"
@@ -68,6 +71,7 @@ def _retrieve(vault_namespace: list[str], vault_name: str) -> str:
     else:
         raise ValueError("vault_namespace[0] should be one of shared/username/service")
 
+    # pylint: disable=no-member
     result = api.Command.vault_retrieve(vault_name, **kwargs)["result"]
     data: str = result["data"].decode("ascii")
     return data
