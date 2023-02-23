@@ -318,6 +318,10 @@ Probe for metrics:
 $ poetry run http localhost:9938/probe target==192.2.0.1 usr==admin pwd==hunter2 fingerprint==A3:2E:C1:77:83:16:5A:FD:87:B2:E2:B9:C6:26:E8:FB:1B:A3:9D:4C:28:A3:AB:A0:CD:50:08:6D:FC:E7:DF:10
 ```
 
+If you get stuck in a state where probing fails because someone else is logged
+in, add the URL parameter `force==1` which will cause the probe to forcibly log
+out any other sessions when it logs in.
+
 Before your first commit, install [pre-commit](https://pre-commit.com/) and run
 `pre-commit install`; this will configure your clone to run a variety of checks
 and you'll only be able to commit if they pass. If they don't work on your
