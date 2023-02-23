@@ -235,8 +235,9 @@ class Client:
             "POST",
             urljoin(self.__base_url, "goform/logout"),
             fields={"data": "byebye"},
+            redirect=False,
         )
-        assert r.status == 200
+        assert r.status == 302
 
 
 def _get_server_certificate_fingerprint(
