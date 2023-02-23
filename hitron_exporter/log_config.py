@@ -24,7 +24,7 @@ def config_early() -> None:
             getLogger().handlers,
         )
 
-    if int(os.environ.get("FLASK_DEBUG", "0")):
+    if int(os.environ.get("FLASK_DEBUG", "0")) == 0:
         level = "INFO"
     else:
         level = "DEBUG"
