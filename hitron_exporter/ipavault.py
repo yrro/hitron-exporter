@@ -1,42 +1,48 @@
+from importlib import resources
+import json
 from logging import getLogger
 import os
-from typing import Optional, Union
+import subprocess
+from typing import Sequence
 from typing_extensions import TypedDict
-
-LOGGER = getLogger(__name__)
-
-
-_api_import_error: Optional[ImportError]
-try:
-    from ipalib import api  # type: ignore[import]
-except ImportError as e:
-    api = None
-    _api_import_error = e
-else:
-    _api_import_error = None
-    api.bootstrap(context="cli")
-    api.finalize()
 
 
 Credential = TypedDict("Credential", {"usr": str, "pwd": str})
 
+LOGGER = getLogger(__name__)
 
-def retrieve(vault_namespace: list[str]) -> Credential:
+
+def retrieve(vault_namespace: Sequence[str]) -> Credential:
     check_keytab_readable()
 
-    if not api:
-        raise RuntimeError("ipalib import package not available") from _api_import_error
+    kwargs: dict[str, str] = {}
+    if vault_namespace[0] in ["user", "service"]:
+        kwargs[vault_namespace[0]] = vault_namespace[1]
+    else:
+        raise ValueError("vault_namespace[0] must be 'user' or 'service'")
 
-    # pylint: disable=no-member
-    api.Backend.rpcclient.connect()
-    try:
-        return {
-            "usr": _retrieve(vault_namespace, "usr"),
-            "pwd": _retrieve(vault_namespace, "pwd"),
-        }
-    finally:
-        # pylint: disable=no-member
-        api.Backend.rpcclient.disconnect()
+    source = resources.files("hitron_exporter").joinpath("vault-retrieve.py")
+    with resources.as_file(source) as vault_retrieve_py:
+        with subprocess.Popen(
+            ["ipa", "console", str(vault_retrieve_py)],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            text=True,
+        ) as p:
+            in_ = json.dumps(kwargs)
+            LOGGER.debug("Running %r with stdin %r", p.args, in_)
+            # pylint: disable=unused-variable
+            out, err = p.communicate(input=in_)
+        LOGGER.debug("... result is %r characters long", len(out))
+
+    if p.returncode != 0:
+        raise RuntimeError(
+            "Failed to retrieve credentials from vaults in namespace"
+            f" {vault_namespace!r}"
+        )
+
+    cred: Credential = json.loads(out)
+    return cred
 
 
 def check_keytab_readable() -> None:
@@ -53,25 +59,8 @@ def check_keytab_readable() -> None:
     except Exception:  # pylint: disable=broad-exception-caught
         LOGGER.exception(
             (
-                "The client keytab %r is not readable; we will not be able to retrieve"
+                "The keytab %r is not readable; we will not be able to retrieve"
                 " credentials from FreeIPA"
             ),
             os.environ["KRB5_CLIENT_KTNAME"],
         )
-
-
-def _retrieve(vault_namespace: list[str], vault_name: str) -> str:
-    kwargs: dict[str, Union[bool, str]] = {}
-    if vault_namespace[0] == "shared":
-        kwargs["shared"] = True
-    elif vault_namespace[0] == "user":
-        kwargs["user"] = vault_namespace[1]
-    elif vault_namespace[0] == "service":
-        kwargs["service"] = vault_namespace[1]
-    else:
-        raise ValueError("vault_namespace[0] should be one of shared/username/service")
-
-    # pylint: disable=no-member
-    result = api.Command.vault_retrieve(vault_name, **kwargs)["result"]
-    data: str = result["data"].decode("ascii")
-    return data
