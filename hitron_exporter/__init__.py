@@ -15,19 +15,24 @@ from prometheus_client.core import (
 )
 from typing_extensions import TypedDict
 
-from . import hitron
-from . import ipavault
+from . import log_config
 
+log_config.config_early()
 
-LOGGER = getLogger(__name__)
+from . import hitron  # noqa: E402
+from . import ipavault  # noqa: E402
 
 
 AppGlobals = TypedDict(
     "AppGlobals", {"ipavault_credentials": Optional[ipavault.Credential]}
 )
-
 globals_: AppGlobals = {"ipavault_credentials": None}
+
+
+LOGGER = getLogger(__name__)
+
 app = flask.Flask(__name__)
+log_config.config(app)
 metrics = PrometheusMetrics(app, path=None)
 
 prometheus_client_app = prometheus_client.make_wsgi_app()
