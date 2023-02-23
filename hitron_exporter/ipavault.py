@@ -1,15 +1,21 @@
 from logging import getLogger
 import os
-from typing import Union
+from typing import Optional, Union
 from typing_extensions import TypedDict
 
 LOGGER = getLogger(__name__)
 
+
+_api_import_error: Optional[ImportError]
 try:
     from ipalib import api  # type: ignore[import]
-except ImportError:
+except ImportError as e:
     api = None
-_api_finalized = False
+    _api_import_error = e
+else:
+    _api_import_error = None
+    api.bootstrap(context="cli")
+    api.finalize()
 
 
 Credential = TypedDict("Credential", {"usr": str, "pwd": str})
@@ -18,7 +24,8 @@ Credential = TypedDict("Credential", {"usr": str, "pwd": str})
 def retrieve(vault_namespace: list[str]) -> Credential:
     check_keytab_readable()
 
-    maybe_finalize_api()
+    if not api:
+        raise RuntimeError("ipalib import package not available") from _api_import_error
 
     api.Backend.rpcclient.connect()
     try:
@@ -48,24 +55,6 @@ def check_keytab_readable() -> None:
             ),
             os.environ["KRB5_CLIENT_KTNAME"],
         )
-
-
-def maybe_finalize_api() -> None:
-    if not api:
-        # ipalib failed to import at module scope. Trying to import it again
-        # will throw ImportError which will bubble up and be caught & logged by
-        # Flask.
-        import ipalib
-
-        # pyflakes warns that ipalib is imported but not used; the assertion
-        # statement silences that warning.
-        assert ipalib
-
-    global _api_finalized
-    if not _api_finalized:
-        api.bootstrap(context="cli")
-        api.finalize()
-        _api_finalized = True
 
 
 def _retrieve(vault_namespace: list[str], vault_name: str) -> str:
