@@ -119,7 +119,7 @@ hitron_cm_bpi_info{auth="authorized",tek="operational"} 1.0
 If you're into containers:
 
 ```
-$ podman run --name hitron-exporter --replace --host=net ghcr.io/yrro/hitron-exporter:latest
+$ podman run --name hitron-exporter --rm --replace --host=net ghcr.io/yrro/hitron-exporter:latest
 ```
 
 If you're not into containers, you need [Poetry](https://python-poetry.org/)
