@@ -234,6 +234,8 @@ Here's what's needed:
    inside the container
 
 Make sure the keytab file is readable inside the container; MIT Kerberos
+silently ignores keytab files that can't be read because they're missing or
+because of permission errors.
 
 In addition, I recommend:
 
