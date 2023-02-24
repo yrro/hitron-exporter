@@ -2,11 +2,12 @@
 # venv into which the application's dependencies are installed. Then a wheel of
 # the application is built and it too is installed into the venv.
 #
-FROM registry.access.redhat.com/ubi9/ubi-minimal AS builder
+FROM quay.io/centos/centos:stream9-minimal as builder
 
 RUN \
   microdnf -y --nodocs --setopt=install_weak_deps=0 install \
-    python3 python3-pip python3-devel krb5-devel gcc openldap-devel \
+    python3 \
+    python3-pip \
   && microdnf -y clean all
 
 # Mouting ~/.cache/pip as a cache volume causes micropipenv to fail to build
@@ -46,14 +47,42 @@ RUN /opt/app-root/venv/bin/python3 -m pip install --no-deps dist/*.whl
 # container.
 #
 # This saves about 200 MiB of disk space, as there's no need to include gcc and
-# header files in the app's container.
+# header files in the app's container (or at least it did back when we needed
+# to build wheels such as 'gssapi' at 'poetry install' time.
 #
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM quay.io/centos/centos:stream9-minimal
 
+# Installing ipa-client would pull in ~157 packages, nearly all of which are
+# not needed for vault-retriete.py to operate. Here we install only the minimum
+# set of dependencies to get the script to work.
 RUN \
-  microdnf -y --nodocs --setopt=install_weak_deps=0 install \
-    python3 \
-  && microdnf -y clean all
+  set -eux -o pipefail; \
+  microdnf=(microdnf -y --nodocs --setopt=install_weak_deps=0); \
+  "${microdnf[@]}" install \
+    python3; \
+  install -d /root/rpms; \
+  ( \
+    cd /root/rpms; \
+    "${microdnf[@]}" download \
+        ipa-client \
+        python3-cffi \
+        python3-cryptography \
+        python3-decorator \
+        python3-dns \
+        python3-gssapi \
+        python3-ipaclient \
+        python3-ipalib \
+        python3-netaddr \
+        python3-pyasn1 \
+        python3-pyasn1-modules \
+        python3-qrcode-core \
+        python3-setuptools \
+        python3-six \
+      ; \
+      rpm -iv --nodeps --excludedocs *.rpm; \
+  ); \
+  rm -rvf /root/rpms; \
+  microdnf -y clean all;
 
 WORKDIR /opt/app-root
 
