@@ -18,9 +18,8 @@ pattern](https://prometheus.io/docs/guides/multi-target-exporter/), where the
 list of CPE devices and parameters for probing them live in Prometheus's config
 file.
 
-Credentials can be stored securely in a [FreeIPA](https://www.freeipa.org/)
-vault. At some point I'll add the ability to retrieve them from a config file
-as well.
+Credentials can be stored insecurely in your Prometheus config file, or
+securely in [FreeIPA](https://www.freeipa.org/) vaults.
 
 Communication with the CPE device is secured by TLS; the TLS server certificate
 fingerprint is checked against the value configured in Prometheus.
