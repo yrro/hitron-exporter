@@ -2,7 +2,7 @@ import datetime
 from importlib import metadata
 from logging import getLogger
 import re
-from typing import Iterator, Optional
+from typing import Iterator, Optional, TypedDict
 
 import flask
 from prometheus_flask_exporter import PrometheusMetrics  # type: ignore [import]
@@ -13,7 +13,6 @@ from prometheus_client.core import (
     GaugeMetricFamily,
     InfoMetricFamily,
 )
-from typing_extensions import TypedDict
 
 from . import log_config
 

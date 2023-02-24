@@ -3,8 +3,7 @@ import json
 from logging import getLogger
 import os
 import subprocess
-from typing import Sequence
-from typing_extensions import TypedDict
+from typing import Sequence, TypedDict
 
 
 Credential = TypedDict("Credential", {"usr": str, "pwd": str})

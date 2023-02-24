@@ -953,7 +953,7 @@ files = [
 name = "typing-extensions"
 version = "4.5.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1092,4 +1092,4 @@ container = ["gunicorn", "setproctitle"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4b3b74b2fb747a94b79b96137903f0d4550e2b3ce2b211c6dcdc330ad0c67160"
+content-hash = "4778399f6bb33ffc146dd1f8a606b478168da6d9b3420067a4f6256b54c06031"
