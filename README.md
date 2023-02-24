@@ -167,11 +167,7 @@ Passing credentials to programs on the command line is not best practice. If
 you use [FreeIPA](https://www.freeipa.org/) then you have the option of storing
 the credentials in vaults associated with a service.
 
-This requires a few extra libraries which are installed when you run:
-
-```
-$ poetry install --only=main -E freeipa-vault
-```
+This requires that you have a working `ipa` command on your system.
 
 Create the following objects in the FreeIPA directory:
 
