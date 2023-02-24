@@ -230,7 +230,8 @@ Here's what's needed:
 
  * Mount `/etc/ipa` from the host inside the guest
  * Mount the keytab from the host inside the guest
- * Set `KRB5_CLIENT_KTNAME` to point to the keytab inside the container
+ * Set the `KRB5_CLIENT_KTNAME` environment variable to point to the keytab
+   inside the container
 
 Make sure the keytab file is readable inside the container; MIT Kerberos
 
