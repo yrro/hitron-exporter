@@ -258,7 +258,7 @@ $ podman run -v /etc/ipa:/etc/ipa -v /etc/hitron-exporter.keytab:/etc/hitron-exp
 
 Sample `prometheus.yml` snippet:
 
-```
+```yaml
 scrape_configs:
 - job_name: hitron
   scrape_interval: 15s
@@ -283,8 +283,8 @@ not, adjust the replacement string for `__address__` as appropriate.
 If you're not using FreeIPA to store credentials, and you're OK with hard-coding
 the credentials into `prometheus.yml`, remove `ipa_vault_namespace` from the
 job's `params` and add `usr` and `pwd`. Note that the values for these
-attributes are lists, not strings; the username and password should be the sole
-entires in each list.
+parameters (as with all `params` in a Prometheus config file) are lists, not strings; the username and password should be the sole
+entries in each list.
 
 ## Using your own Gunicorn settings in a container
 
