@@ -192,7 +192,8 @@ class Collector(prometheus_client.registry.Collector):
 
         yield nw_rx
 
-    def parse_pkt(self, pkt: str) -> Optional[float]:
+    @staticmethod
+    def parse_pkt(pkt: str) -> Optional[float]:
         m = re.match(r"(\d+(?:\.\d+)?)([A-Z]?) Bytes", pkt)
         if not m:
             LOGGER.error("Couldn't parse %r as pkt", pkt)
