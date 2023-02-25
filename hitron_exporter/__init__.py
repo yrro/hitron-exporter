@@ -45,7 +45,7 @@ prometheus_client_app = prometheus_client.make_wsgi_app()
 @app.route("/metrics")
 def metrics_() -> ResponseReturnValue:
     """
-    For some reason the PromtheusMetrics route shows up when running '/metrics', but
+    For some reason the PrometheusMetrics route shows up when running '/metrics', but
     calling it results in a 404 error. So we'll continue to manually wire
     a route to the prometheus_client's provided WSGI app.
     """
