@@ -31,18 +31,15 @@ globals_: AppGlobals = {"ipavault_credentials": None}
 LOGGER = getLogger(__name__)
 
 app = flask.Flask(__name__)
+
 metrics = PrometheusMetrics(app, path=None)
+metrics.info(
+    "hitron_exporter_info",
+    "Information about hitron-exporter itself",
+    version=metadata.version("hitron-exporter"),
+)
 
 prometheus_client_app = prometheus_client.make_wsgi_app()
-
-
-@app.before_first_request
-def info_metric() -> None:
-    metrics.info(
-        "hitron_exporter_info",
-        "Information about hitron-exporter itself",
-        version=metadata.version("hitron-exporter"),
-    )
 
 
 @app.route("/metrics")
