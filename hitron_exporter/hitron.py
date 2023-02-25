@@ -124,8 +124,8 @@ class Client:
         )
         self.__cookies = http.cookiejar.CookieJar()
 
-    @classmethod
-    def __create_ssl_context(cls) -> ssl.SSLContext:
+    @staticmethod
+    def __create_ssl_context() -> ssl.SSLContext:
         """
         An SSLContext for communication with the cable modem which uses a 1024-bit RSA
         key, rejected by modern OpenSSL configurations.
