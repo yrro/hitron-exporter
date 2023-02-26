@@ -286,6 +286,8 @@ job's `params` and add `usr` and `pwd`. Note that the values for these
 parameters (as with all `params` in a Prometheus config file) are lists, not strings; the username and password should be the sole
 entries in each list.
 
+Note: metrics about the exporter itself are exposed at `/metrics`.
+
 ## Using your own Gunicorn settings in a container
 
 [Gunicorn settings](https://docs.gunicorn.org/en/latest/settings.html) can be
@@ -309,6 +311,10 @@ Run a development web server with hot code reloading:
 ```
 $ poetry run flask run --debug
 ```
+
+Note: `--debug` implies `--reload`, which disables the `/metrics` unless
+[`DEBUG_METRICS`](https://github.com/rycus86/prometheus_flask_exporter/tree/73404e97185c843f714be0f8cb5d9f4ba911a3b1#debug-mode)
+is set in the environment.
 
 Probe for metrics:
 

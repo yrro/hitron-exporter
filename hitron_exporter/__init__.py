@@ -32,7 +32,7 @@ LOGGER = getLogger(__name__)
 
 app = flask.Flask(__name__)
 
-metrics = PrometheusMetrics(app, path=None)
+metrics = PrometheusMetrics(app)
 metrics.info(
     "hitron_exporter_info",
     "Information about hitron-exporter itself",
@@ -40,17 +40,6 @@ metrics.info(
 )
 
 prometheus_client_app = prometheus_client.make_wsgi_app()
-
-
-@app.route("/metrics")
-@metrics.do_not_track()  # type: ignore[misc]
-def metrics_() -> ResponseReturnValue:
-    """
-    For some reason the PrometheusMetrics route shows up when running '/metrics', but
-    calling it results in a 404 error. So we'll continue to manually wire
-    a route to the prometheus_client's provided WSGI app.
-    """
-    return prometheus_client_app
 
 
 @app.route("/probe")
