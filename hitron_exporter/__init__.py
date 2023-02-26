@@ -43,6 +43,7 @@ prometheus_client_app = prometheus_client.make_wsgi_app()
 
 
 @app.route("/metrics")
+@metrics.do_not_track()  # type: ignore[misc]
 def metrics_() -> ResponseReturnValue:
     """
     For some reason the PrometheusMetrics route shows up when running '/metrics', but
