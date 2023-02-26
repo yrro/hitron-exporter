@@ -133,11 +133,10 @@ class Collector(prometheus_client.registry.Collector):
         yield dsinfo_snr
 
     def collect_uptime(self) -> Iterator[CounterMetricFamily]:
-        m = re.match(
+        if m := re.match(
             r"(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds",
             self.__sysinfo[0]["systemUptime"],
-        )
-        if m:
+        ):
             td = datetime.timedelta(
                 days=int(m.group(1)),
                 hours=int(m.group(2)),
@@ -153,12 +152,10 @@ class Collector(prometheus_client.registry.Collector):
             "hitron_network_transmit_bytes", "", labels=["device"]
         )
 
-        nbytes = self.parse_pkt(self.__sysinfo[0]["LSendPkt"])
-        if nbytes:
+        if nbytes := self.parse_pkt(self.__sysinfo[0]["LSendPkt"]):
             nw_tx.add_metric(["lan"], nbytes)
 
-        nbytes = self.parse_pkt(self.__sysinfo[0]["WSendPkt"])
-        if nbytes:
+        if nbytes := self.parse_pkt(self.__sysinfo[0]["WSendPkt"]):
             nw_tx.add_metric(["wan"], nbytes)
 
         yield nw_tx
@@ -167,12 +164,10 @@ class Collector(prometheus_client.registry.Collector):
             "hitron_network_receive_bytes", "", labels=["device"]
         )
 
-        nbytes = self.parse_pkt(self.__sysinfo[0]["LRecPkt"])
-        if nbytes:
+        if nbytes := self.parse_pkt(self.__sysinfo[0]["LRecPkt"]):
             nw_rx.add_metric(["lan"], nbytes)
 
-        nbytes = self.parse_pkt(self.__sysinfo[0]["WRecPkt"])
-        if nbytes:
+        if nbytes := self.parse_pkt(self.__sysinfo[0]["WRecPkt"]):
             nw_rx.add_metric(["wan"], nbytes)
 
         yield nw_rx
