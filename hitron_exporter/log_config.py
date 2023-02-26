@@ -1,6 +1,6 @@
 import enum
 import os
-from logging import INFO, DEBUG, basicConfig, getLogger
+from logging import INFO, DEBUG, basicConfig, getLogger, getLevelName
 
 LOGGER = getLogger(__name__)
 
@@ -35,3 +35,7 @@ def config_early() -> None:
 
     if host == Host.UNKNOWN:
         LOGGER.warning("Unknown host environment; defaulting log level to INFO")
+    else:
+        LOGGER.debug(
+            "Host environment: %s; log level: %s", host.name, getLevelName(level)
+        )
