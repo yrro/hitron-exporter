@@ -326,6 +326,12 @@ If you get stuck in a state where probing fails because someone else is logged
 in, add the URL parameter `force==1` which will cause the probe to forcibly log
 out any other sessions when it logs in.
 
+Run the tests:
+
+```
+$ poetry run pytest
+```
+
 Before your first commit, install [pre-commit](https://pre-commit.com/) and run
 `pre-commit install`; this will configure your clone to run a variety of checks
 and you'll only be able to commit if they pass. If they don't work on your
