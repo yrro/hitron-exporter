@@ -39,8 +39,6 @@ metrics.info(
     version=metadata.version("hitron-exporter"),
 )
 
-prometheus_client_app = prometheus_client.make_wsgi_app()
-
 
 @app.route("/probe")
 def probe() -> ResponseReturnValue:
