@@ -18,7 +18,7 @@ RUN \
 #
 ENV PIP_NO_CACHE_DIR=off PIP_ROOT_USER_ACTION=off
 
-RUN python3 -m pip install build micropipenv[toml]
+RUN python3 -m pip install --only-binary=:all: build micropipenv[toml]
 
 WORKDIR /opt/app-build
 
