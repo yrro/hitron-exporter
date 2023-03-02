@@ -80,8 +80,8 @@ def probe() -> ResponseReturnValue:
 
 class Collector(prometheus_client.registry.Collector):
     def __init__(self, client: hitron.Client) -> None:
-        self.__dsinfo = client.get_data(client.Dataset.DSINFO)
         self.__usinfo = client.get_data(client.Dataset.USINFO)
+        self.__dsinfo = client.get_data(client.Dataset.DSINFO)
         self.__sysinfo = client.get_data(client.Dataset.SYSINFO)
         self.__system_model = client.get_data(client.Dataset.SYSTEM_MODEL)
         self.__cminit = client.get_data(client.Dataset.CMINIT)
