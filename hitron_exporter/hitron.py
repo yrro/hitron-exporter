@@ -255,7 +255,7 @@ def _get_server_certificate_fingerprint(
         with ssl_context.wrap_socket(sock) as sslsock:
             crt = sslsock.getpeercert(True)
             if not crt:
-                raise RuntimeError(
+                raise AssertionError(
                     "TLS server certificate missing; this should not be possible!"
                 )
             digest = hashlib.sha256(crt).digest()
