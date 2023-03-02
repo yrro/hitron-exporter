@@ -8,7 +8,59 @@ on:
 
 jobs:
 
-  main:
+  wheel:
+    name: Build wheel
+    runs-on: ubuntu-latest
+
+    outputs:
+      pep_440_version: ${{steps.pep440.outputs.version }}
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+
+    - name: Construct PEP 440 version identifier
+      id: pep_440
+      run: echo version=$(git describe --match='version-marker' | sed s/version-marker-/0.1.0.dev/ | sed 's/-g/+git./') >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Bump version number
+      run: poetry version "${{ steps.pep_440.outputs.version }}"
+      shell: bash
+
+    - name: Install dependencies
+      run: poetry install --with=dev
+      shell: bash
+
+    - name: Run tests
+      run: poetry run pytest
+      shell: bash
+
+    - name: Build wheel
+      run: poetry build -f wheel
+
+    - name: Upload wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheel
+        path:
+          dist/*.whl
+
+  container_image:
+    name: Build container image
+    needs:
+    - wheel
     runs-on: ubuntu-latest
     steps:
 
@@ -19,17 +71,12 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@v3
+
+    - name: Download wheel
+      uses: actions/download-artifact@v3
       with:
-        fetch-depth: 0
-
-    - name: Construct PEP 440 version identifier
-      id: pep_440
-      run: echo version=$(git describe --match='version-marker' | sed s/version-marker-/0.1.0.dev/ | sed 's/-g/+git./') >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Bump version number
-      run: sed -i -e '0,/"0\.1\.0"/ { s//"${{ steps.pep_440.outputs.version }}"/ }' pyproject.toml
-      shell: bash
+        name: wheel
+        path: hitron_exporter
 
     - name: Build image
       uses: redhat-actions/buildah-build@v2
@@ -37,7 +84,7 @@ jobs:
         image: ghcr.io/yrro/hitron-exporter
         containerfiles: Containerfile
         build-args: |
-          nproc: 2
+          build_wheel=0
         labels: |
           org.opencontainers.image.created=${{ steps.rfc_5322.outputs.date }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}

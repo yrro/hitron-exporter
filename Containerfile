@@ -36,9 +36,16 @@ RUN python3 -m venv /opt/app-root/venv \
 
 COPY hitron_exporter hitron_exporter
 
-ARG nproc=1
+ARG build_wheel=1
 
-RUN MAKEFLAGS=-j$nproc python3 -m build -w
+RUN \
+  set -eux -o pipefail; \
+  if [[ $build_wheel -eq 0 ]]; then \
+    install -d dist; \
+    mv hitron_exporter/*.whl dist/; \
+  else \
+    python3 -m build -w; \
+  fi
 
 RUN /opt/app-root/venv/bin/python3 -m pip install --no-deps dist/*.whl
 
