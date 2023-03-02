@@ -98,6 +98,9 @@ hitron_channel_downstream_snr{channel="24",frequency="546250000",port="24"} 40.9
 # HELP hitron_system_uptime_seconds_total
 # TYPE hitron_system_uptime_seconds_total counter
 hitron_system_uptime_seconds_total 13734.0
+# HELP hitron_system_clock_timestamp_seconds
+# TYPE hitron_system_clock_timestamp_seconds gauge
+hitron_system_uptime_seconds_total 768146400.0
 # HELP hitron_network_transmit_bytes_total
 # TYPE hitron_network_transmit_bytes_total counter
 hitron_network_transmit_bytes_total{device="lan"} 4.248e+07

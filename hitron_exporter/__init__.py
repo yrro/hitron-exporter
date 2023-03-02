@@ -90,6 +90,7 @@ class Collector(prometheus_client.registry.Collector):
         yield from self.collect_usinfo()
         yield from self.collect_dsinfo()
         yield from self.collect_uptime()
+        yield from self.collect_clock()
         yield from self.collect_network()
         yield from self.collect_sysinfo()
         yield from self.collect_docsis()
@@ -145,6 +146,19 @@ class Collector(prometheus_client.registry.Collector):
             )
             yield CounterMetricFamily(
                 "hitron_system_uptime_seconds_total", "", value=td.total_seconds()
+            )
+
+    def collect_clock(self) -> Iterator[GaugeMetricFamily]:
+        try:
+            ts = datetime.datetime.strptime(
+                self.__sysinfo[0]["systemTime"],
+                "%a %b %d, %Y, %H:%M:%S",
+            )
+        except ValueError as e:
+            LOGGER.exception("Unable to parse systemTime: %s", e)
+        else:
+            yield GaugeMetricFamily(
+                "hitron_system_clock_timestamp_seconds", "", value=ts.timestamp()
             )
 
     def collect_network(self) -> Iterator[CounterMetricFamily]:

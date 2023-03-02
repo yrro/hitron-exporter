@@ -188,6 +188,13 @@ def test_metrics_system_uptime(metrics):
     ]
 
 
+def test_metrics_system_clock(metrics):
+    # then:
+    assert (m := metrics.get("hitron_system_clock_timestamp_seconds"))
+    assert m.type == "gauge"
+    assert m.samples == [Sample(m.name, labels={}, value=1655482150.0)]
+
+
 def test_metrics_network_transmit(metrics):
     # then:
     assert (m := metrics.get("hitron_network_transmit_bytes"))
