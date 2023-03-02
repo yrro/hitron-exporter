@@ -51,6 +51,7 @@ repos:
     language: system
     types:
     - python
+    exclude: ^tests/
   - id: pytest
     name: pytest
     entry: poetry run pytest

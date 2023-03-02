@@ -7,6 +7,8 @@ import json
 from pprint import pprint
 from unittest.mock import Mock
 
+import pytest
+
 
 def test_vault_retrieve(capsys, monkeypatch):
     # given
@@ -14,21 +16,20 @@ def test_vault_retrieve(capsys, monkeypatch):
 
     def mock_vault_retrieve(name, /, service=None):
         assert service == "HTTP/cm-hitron.example.com"
-        match name:
-            case "usr":
-                return {
-                    "result": {"data": b"uuu"},
-                    "summary": "blah",
-                    "value": name,
-                }
-            case "pwd":
-                return {
-                    "result": {"data": b"ppp"},
-                    "summary": "blah",
-                    "value": name,
-                }
-            case _:
-                raise AssertionError("vault not found")
+        if name == "usr":
+            return {
+                "result": {"data": b"uuu"},
+                "summary": "blah",
+                "value": name,
+            }
+        elif name == "pwd":
+            return {
+                "result": {"data": b"ppp"},
+                "summary": "blah",
+                "value": name,
+            }
+        else:
+            pytest.fail(f"unknown vault {name!r}")
 
     ipa_api.Command.vault_retrieve.side_effect = mock_vault_retrieve
 
