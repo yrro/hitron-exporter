@@ -101,19 +101,21 @@ class Client:
         def path(self) -> str:
             return f"data/{self.value}.asp"
 
-    def __init__(self, host: str, fingerprint: Optional[str]) -> None:
-        self.__base_url = f"https://{host}/"
+    def __init__(self, host: str, fingerprint: Optional[str], port: int = 443) -> None:
+        self.__base_url = f"https://{host}:{port}/"
         ssl_context = self.__create_ssl_context()
 
         if not fingerprint:
             LOGGER.warning(
                 (
-                    "Communication with <%s> is insecure because the expected TLS"
-                    " server certificate fingerprint was not specified. The host"
-                    " presented a certificate with the following fingerprint: %r"
+                    "Communication with <https://%s:%s> is insecure because the"
+                    " expected TLS server certificate fingerprint was not specified."
+                    " The host presented a certificate with the following fingerprint:"
+                    " %r"
                 ),
                 host,
-                _get_server_certificate_fingerprint((host, 443), 5, ssl_context),
+                port,
+                _get_server_certificate_fingerprint((host, port), 5, ssl_context),
             )
 
         self.__http = urllib3.PoolManager(
@@ -209,6 +211,7 @@ class Client:
                 "forcelogoff": "0" if not force else "1",
                 presession_cookie.name: presession_cookie.value,
             },
+            encode_multipart=False,
         )
         assert r.status == 200
 

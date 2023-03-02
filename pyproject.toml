@@ -20,6 +20,8 @@ python-dotenv = "^1.0.0"
 types-urllib3 = "^1.26.25.6"
 pylint = "^2.16.2"
 pytest = "^7.2.1"
+pytest-httpserver = "^1.0.6"
+trustme = "^0.9.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
