@@ -315,10 +315,6 @@ Run a development web server with hot code reloading:
 $ poetry run flask run --debug
 ```
 
-Note: `--debug` implies `--reload`, which disables the `/metrics` unless
-[`DEBUG_METRICS`](https://github.com/rycus86/prometheus_flask_exporter/tree/73404e97185c843f714be0f8cb5d9f4ba911a3b1#debug-mode)
-is set in the environment.
-
 Probe for metrics:
 
 ```
