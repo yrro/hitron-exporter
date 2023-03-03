@@ -12,9 +12,6 @@ jobs:
     name: Build wheel
     runs-on: ubuntu-latest
 
-    outputs:
-      pep_440_version: ${{steps.pep440.outputs.version }}
-
     steps:
 
     - name: Checkout
@@ -91,6 +88,11 @@ jobs:
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.url=https://github.com/${{ github.repository }}
 
+    - name: Extract version from image
+      id: hitron_version
+      run: echo version=$(podman run --rm -it --pull=never ghcr.io/yrro/hitron-exporter venv/bin/python -c 'from importlib.metadata import version; print(version("hitron-exporter"))') >> $GITHUB_OUTPUT
+      shell: bash
+
     - name: Extract base image from image
       id: image_base_ref
       run: echo ref=$(buildah inspect --type=image ghcr.io/yrro/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_OUTPUT
@@ -105,9 +107,10 @@ jobs:
       run: buildah from --pull=false --name=w ghcr.io/yrro/hitron-exporter
       shell: bash
 
-    - name: Apply base image labels
+    - name: Apply additional image labels
       run: |
         buildah config \
+          --label org.opencontainers.image.version=${{ steps.hitron_version.outputs.version }} \
           --label org.opencontainers.image.base.name=${{ steps.image_base_ref.outputs.ref }} \
           --label org.opencontainers.image.base.digest=${{ steps.image_base_digest.outputs.digest }} \
           w
