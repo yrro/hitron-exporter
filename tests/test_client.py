@@ -94,7 +94,7 @@ def test_get_data(httpserver) -> None:
     client = Client("localhost", fingerprint="", port=httpserver.port)
 
     # when:
-    client.get_data(Client.Dataset.TUNEFREQ)
+    data = client.get_data(Client.Dataset.TUNEFREQ)
 
     # then:
-    # no exceptions
+    data == [{"tunefreq": "213.45"}]
