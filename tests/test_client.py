@@ -1,3 +1,5 @@
+import binascii
+import hashlib
 import ssl
 
 import pytest
@@ -45,6 +47,34 @@ def test_fingerprint_checked(httpserver, localhost_cert) -> None:
     ):
         # when
         client.http_request("GET", httpserver.url_for("/"), retries=False)
+
+
+@pytest.mark.filterwarnings("ignore::urllib3.connectionpool.InsecureRequestWarning")
+def test_fingerprint_optional(httpserver, localhost_cert, caplog) -> None:
+    # given:
+    client = Client(
+        "localhost",
+        fingerprint=None,
+        port=httpserver.port,
+    )
+    cert_der = ssl.PEM_cert_to_DER_cert(
+        localhost_cert.cert_chain_pems[0].bytes().decode("ascii")
+    )
+    digest = hashlib.sha256(cert_der).digest()
+    fingerprint = binascii.hexlify(digest, ":").decode("ascii")
+
+    # when:
+    client.http_request("GET", httpserver.url_for("/"), retries=False)
+
+    # then:
+    print(f"expected fingerprint: {fingerprint}")
+    assert any(
+        (
+            (logger, level, message)
+            for (logger, level, message) in caplog.record_tuples
+            if logger.startswith("hitron_exporter.") and fingerprint in message
+        )
+    )
 
 
 def test_login_logout(httpserver) -> None:
