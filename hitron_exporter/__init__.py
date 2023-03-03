@@ -1,4 +1,6 @@
+from calendar import timegm
 import datetime
+import time
 from importlib import metadata
 from logging import getLogger
 import re
@@ -156,11 +158,18 @@ class Collector(prometheus_client.registry.Collector):
 
     @staticmethod
     def parse_clock(input_: str) -> Optional[float]:
+        # Assumes the input_ string is in UTC which is probably not the case.  But we
+        # won't find out until British Summer Time starts. If local time is desired,
+        # time.mktime will work BUT it will convert using the current timezone as
+        # provided by the C library. "Welcome to hell", indeed...
+        # <https://stackoverflow.com/a/5499906/643220>
         try:
-            return datetime.datetime.strptime(
-                input_,
-                "%a %b %d, %Y, %H:%M:%S",
-            ).timestamp()
+            return timegm(
+                time.strptime(
+                    input_,
+                    "%a %b %d, %Y, %H:%M:%S",
+                )
+            )
         except ValueError as e:
             LOGGER.exception("Unable to parse systemTime: %s", e)
             return None
