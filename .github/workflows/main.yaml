@@ -90,7 +90,7 @@ jobs:
 
     - name: Extract version from image
       id: hitron_version
-      run: echo version=$(podman run --rm -it --pull=never ghcr.io/yrro/hitron-exporter venv/bin/python -c 'from importlib.metadata import version; print(version("hitron-exporter"))') >> $GITHUB_OUTPUT
+      run: echo version=$(podman run --rm --pull=never ghcr.io/yrro/hitron-exporter venv/bin/python -c 'from importlib.metadata import version; print(version("hitron-exporter"))') >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Extract base image from image
