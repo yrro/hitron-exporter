@@ -43,6 +43,9 @@ jobs:
       run: poetry install --with=dev
       shell: bash
 
+    - name: Setup upterm session
+      uses: lhotari/action-upterm@v1
+
     - name: Run tests
       run: poetry run pytest
       shell: bash
