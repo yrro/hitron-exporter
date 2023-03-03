@@ -1,4 +1,3 @@
-import os
 from unittest.mock import Mock
 
 from prometheus_client.samples import Sample
@@ -189,16 +188,22 @@ def test_metrics_system_uptime(metrics):
     ]
 
 
-@pytest.mark.xfail(
-    "GITHUB_ACTIONS" in os.environ,
-    reason="Timestamp from test data is parsed and the result is wrong by 1 hour",
-    strict=True,
-)
 def test_metrics_system_clock(metrics):
     # then:
     assert (m := metrics.get("hitron_system_clock_timestamp_seconds"))
     assert m.type == "gauge"
-    assert m.samples == [Sample(m.name, labels={}, value=1655482150.0)]
+    assert m.samples == [Sample(m.name, labels={}, value=1655485750.0)]
+
+
+@pytest.mark.parametrize(
+    "input_,expected",
+    [
+        ("Fri Jun 17, 2022, 17:09:10", 1655485750.0),
+        ("Tue Feb 01, 2011, 16:12:05", 1296576725.0),
+    ],
+)
+def test_parse_clock(input_, expected):
+    assert Collector.parse_clock(input_) == expected
 
 
 def test_metrics_network_transmit(metrics):

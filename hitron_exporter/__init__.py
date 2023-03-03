@@ -149,17 +149,21 @@ class Collector(prometheus_client.registry.Collector):
             )
 
     def collect_clock(self) -> Iterator[GaugeMetricFamily]:
-        try:
-            ts = datetime.datetime.strptime(
-                self.__sysinfo[0]["systemTime"],
-                "%a %b %d, %Y, %H:%M:%S",
+        if ts := self.parse_clock(self.__sysinfo[0]["systemTime"]):
+            yield GaugeMetricFamily(
+                "hitron_system_clock_timestamp_seconds", "", value=ts
             )
+
+    @staticmethod
+    def parse_clock(input_: str) -> Optional[float]:
+        try:
+            return datetime.datetime.strptime(
+                input_,
+                "%a %b %d, %Y, %H:%M:%S",
+            ).timestamp()
         except ValueError as e:
             LOGGER.exception("Unable to parse systemTime: %s", e)
-        else:
-            yield GaugeMetricFamily(
-                "hitron_system_clock_timestamp_seconds", "", value=ts.timestamp()
-            )
+            return None
 
     def collect_network(self) -> Iterator[CounterMetricFamily]:
         nw_tx = CounterMetricFamily(
