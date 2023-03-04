@@ -41,7 +41,7 @@ jobs:
       shell: bash
 
     - name: Run tests
-      run: poetry run pytest
+      run: poetry run pytest --github-report
       shell: bash
 
     - name: Build wheel
