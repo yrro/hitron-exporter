@@ -83,9 +83,9 @@ def test_login_logout(httpserver) -> None:
     )
 
     def login_handler(request: Request) -> Response:
-        assert request.form["usr"] == "uuu"
-        assert request.form["pwd"] == "ppp"
-        assert request.form["preSession"] == "presession_id"
+        assert request.form.get("usr") == "uuu"
+        assert request.form.get("pwd") == "ppp"
+        assert request.form.get("preSession") == "presession_id"
         return Response(
             "success", headers={"Set-Cookie": "session=sessionid; path=/; HttpOnly"}
         )
@@ -95,8 +95,8 @@ def test_login_logout(httpserver) -> None:
     ).respond_with_handler(login_handler)
 
     def logout_handler(request: Request) -> Response:
-        assert request.cookies["session"] == "sessionid"
-        assert request.form["data"] == "byebye"  # observed behaviour
+        assert request.cookies.get("session") == "sessionid"
+        assert request.form.get("data") == "byebye"  # observed behaviour
         return Response(status=302)
 
     httpserver.expect_ordered_request(
