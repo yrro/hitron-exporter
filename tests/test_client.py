@@ -97,7 +97,15 @@ def test_login_logout(httpserver) -> None:
     def logout_handler(request: Request) -> Response:
         assert request.cookies.get("session") == "sessionid"
         assert request.form.get("data") == "byebye"  # observed behaviour
-        return Response(status=302)
+        return Response(
+            status=302,
+            headers={
+                "Set-Cookie": (
+                    "session=deleted; path=/; HttpOnly; expires=Thu, 01 Jan 1970"
+                    " 00:00:00 GMT"
+                )
+            },
+        )
 
     httpserver.expect_ordered_request(
         "/goform/logout", method="POST"
