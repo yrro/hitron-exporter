@@ -22,25 +22,17 @@ def retrieve(vault_namespace: Sequence[str]) -> Credential:
 
     source = resources.files("hitron_exporter").joinpath("vault-retrieve.py")
     with resources.as_file(source) as vault_retrieve_py:
-        with subprocess.Popen(
+        input_ = json.dumps(kwargs)
+        LOGGER.debug("Launching vault-retrieve.py with input: %r", input)
+        proc = subprocess.run(
             ["ipa", "console", str(vault_retrieve_py)],
-            stdin=subprocess.PIPE,
+            input=input_,
             stdout=subprocess.PIPE,
-            text=True,
-        ) as p:
-            in_ = json.dumps(kwargs)
-            LOGGER.debug("Running %r with stdin %r", p.args, in_)
-            # pylint: disable=unused-variable
-            out, err = p.communicate(input=in_)
-        LOGGER.debug("... result is %r characters long", len(out))
-
-    if p.returncode != 0:
-        raise RuntimeError(
-            "Failed to retrieve credentials from vaults in namespace"
-            f" {vault_namespace!r}"
+            check=True,
         )
+        LOGGER.debug("... output: %r", proc.stdout)
 
-    cred: Credential = json.loads(out)
+    cred: Credential = json.loads(proc.stdout)
     return cred
 
 
