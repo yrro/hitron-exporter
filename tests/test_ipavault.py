@@ -21,8 +21,9 @@ def test_retrieve_ok(monkeypatch):
 
 def test_keytab_unreadable(tmp_path, monkeypatch, caplog):
     # given:
-    tmp_path.chmod(0)
-    monkeypatch.setenv("KRB5_CLIENT_KTNAME", str(tmp_path))
+    keytab_path = tmp_path / "krb5.keytab"
+    keytab_path.touch(mode=0)
+    monkeypatch.setenv("KRB5_CLIENT_KTNAME", str(keytab_path))
 
     # when:
     ipavault._check_keytab_readable()
