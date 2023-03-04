@@ -253,10 +253,10 @@ def _get_server_certificate_fingerprint(
     """
     with socket.create_connection(addr, timeout=timeout) as sock:
         with ssl_context.wrap_socket(sock) as sslsock:
-            crt = sslsock.getpeercert(True)
-            if not crt:
-                raise AssertionError(
-                    "TLS server certificate missing; this should not be possible!"
-                )
+            crt = sslsock.getpeercert(binary_form=True)
+            assert crt, (
+                "for a client SSL socket, the server will always provide a certificate,"
+                " regardless of whether validation was required"
+            )
             digest = hashlib.sha256(crt).digest()
             return binascii.hexlify(digest, ":").decode("ascii")
