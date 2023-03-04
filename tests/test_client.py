@@ -69,9 +69,9 @@ def test_fingerprint_optional(httpserver, localhost_cert, caplog) -> None:
     # then:
     print(f"expected fingerprint: {fingerprint}")
     expected_messages = (
-        (logger, level, message)
-        for logger, level, message in caplog.record_tuples
-        if logger.startswith("hitron_exporter.") and fingerprint in message
+        rec
+        for rec in caplog.records
+        if rec.name.startswith("hitron_exporter.") and fingerprint in rec.message
     )
     assert any(expected_messages)
 

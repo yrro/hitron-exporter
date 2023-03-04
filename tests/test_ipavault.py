@@ -30,8 +30,9 @@ def test_keytab_unreadable(tmp_path, monkeypatch, caplog):
 
     # then
     expected_messages = (
-        (logger, level, message)
-        for logger, level, message in caplog.record_tuples
-        if logger.startswith("hitron_exporter.") and "is not readable; we" in message
+        rec
+        for rec in caplog.records
+        if rec.name.startswith("hitron_exporter.")
+        and "is not readable; we" in rec.message
     )
     assert any(expected_messages)
