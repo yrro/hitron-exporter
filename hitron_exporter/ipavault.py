@@ -12,7 +12,7 @@ LOGGER = getLogger(__name__)
 
 
 def retrieve(vault_namespace: Sequence[str]) -> Credential:
-    check_keytab_readable()
+    _check_keytab_readable()
 
     kwargs: dict[str, str] = {}
     if vault_namespace[0] in ["user", "service"]:
@@ -36,7 +36,7 @@ def retrieve(vault_namespace: Sequence[str]) -> Credential:
     return cred
 
 
-def check_keytab_readable() -> None:
+def _check_keytab_readable() -> None:
     if "KRB5_CLIENT_KTNAME" not in os.environ:
         return
 
@@ -47,7 +47,7 @@ def check_keytab_readable() -> None:
         # pylint: disable=unspecified-encoding
         with open(os.environ["KRB5_CLIENT_KTNAME"]) as _:
             pass
-    except Exception:  # pylint: disable=broad-exception-caught
+    except OSError:
         LOGGER.exception(
             (
                 "The keytab %r is not readable; we will not be able to retrieve"

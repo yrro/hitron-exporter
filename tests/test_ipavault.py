@@ -17,3 +17,20 @@ def test_retrieve_ok(monkeypatch):
 
     # then:
     assert data == expected
+
+
+def test_keytab_unreadable(tmp_path, monkeypatch, caplog):
+    # given:
+    tmp_path.chmod(0)
+    monkeypatch.setenv("KRB5_CLIENT_KTNAME", str(tmp_path))
+
+    # when:
+    ipavault._check_keytab_readable()
+
+    # then
+    expected_messages = (
+        (logger, level, message)
+        for logger, level, message in caplog.record_tuples
+        if logger.startswith("hitron_exporter.") and "is not readable; we" in message
+    )
+    assert any(expected_messages)
