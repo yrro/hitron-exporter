@@ -150,9 +150,13 @@ class Client:
         """
         urllib3 wrapper that uses a CookieJar to provide rudimentary cookie handling.
         """
-        dummy_request = urllib.request.Request(url)
-        self.__cookies.add_cookie_header(dummy_request)
+        if headers is None:
+            headers = {}
+        else:
+            headers = headers.copy()
 
+        dummy_request = urllib.request.Request(url, headers=headers)
+        self.__cookies.add_cookie_header(dummy_request)
         if dummy_request.unredirected_hdrs:
             LOGGER.debug(
                 "Adding headers %r into %r to %r",
@@ -160,22 +164,6 @@ class Client:
                 method,
                 url,
             )
-            if headers is None:
-                headers = {}
-            else:
-                headers = headers.copy()
-
-            for h in ["Cookies", "Cookies2"]:
-                if h in headers and h in dummy_request.unredirected_hdrs:
-                    LOGGER.warning(
-                        (
-                            "Taking %r header from cookie jar and ignoring %r from"
-                            " headers argument"
-                        ),
-                        h,
-                        h,
-                    )
-
             headers |= dummy_request.unredirected_hdrs
 
         response = self.__http.request(method, url, fields, headers, **urlopen_kw)  # type: ignore [no-untyped-call]
