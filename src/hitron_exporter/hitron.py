@@ -119,7 +119,6 @@ class Client:
             )
 
         self.__http = urllib3.PoolManager(
-            retries=0,
             timeout=5.0,
             assert_fingerprint=fingerprint,
             ssl_context=ssl_context,
@@ -145,30 +144,26 @@ class Client:
         url: Any,
         fields: Any = None,
         headers: Any = None,
-        **urlopen_kw: Any,
     ) -> Any:
         """
         urllib3 wrapper that uses a CookieJar to provide rudimentary cookie handling.
         """
-        if headers is None:
-            headers = {}
-        else:
-            headers = headers.copy()
-
-        dummy_request = urllib.request.Request(url, headers=headers)
+        dummy_request = urllib.request.Request(
+            url, headers=headers if headers is not None else {}
+        )
         self.__cookies.add_cookie_header(dummy_request)
-        if dummy_request.unredirected_hdrs:
-            LOGGER.debug(
-                "Adding headers %r into %r to %r",
-                dummy_request.unredirected_hdrs.keys(),
-                method,
-                url,
-            )
-            headers |= dummy_request.unredirected_hdrs
 
-        response = self.__http.request(method, url, fields, headers, **urlopen_kw)  # type: ignore [no-untyped-call]
-        # If urllib3 chases redirects then any cookies sent by non-final
-        # responses in the redirect chain will be thrown away by urllib3!
+        # After a redirect to another host, prevent leaking cookies intended only for
+        # the original host. We do this by setting retries=False because we also want to
+        # disable retry logic, causing any thown exceptions to be their original
+        # instances and not wrapped by MaxRetryError.
+        response = self.__http.request(
+            method,
+            url,
+            fields=fields,
+            headers=dict(dummy_request.header_items()),
+            retries=False,
+        )  # type: ignore [no-untyped-call]
         self.__cookies.extract_cookies(response, dummy_request)
         return response
 
@@ -179,7 +174,6 @@ class Client:
         r = self.http_request(
             "GET",
             self.__base_url,
-            retries=False,
         )
         assert r.status == 302
 
@@ -199,7 +193,6 @@ class Client:
                 "forcelogoff": "0" if not force else "1",
                 presession_cookie.name: presession_cookie.value,
             },
-            encode_multipart=False,
         )
         assert r.status == 200
 
@@ -226,7 +219,6 @@ class Client:
             "POST",
             urljoin(self.__base_url, "goform/logout"),
             fields={"data": "byebye"},
-            redirect=False,
         )
         assert r.status == 302
 

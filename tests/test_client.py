@@ -46,7 +46,7 @@ def test_fingerprint_checked(httpserver, localhost_cert) -> None:
         urllib3.exceptions.SSLError, match="Fingerprints did not match."
     ):
         # when
-        client.http_request("GET", httpserver.url_for("/"), retries=False)
+        client.http_request("GET", httpserver.url_for("/"))
 
 
 @pytest.mark.filterwarnings("ignore::urllib3.connectionpool.InsecureRequestWarning")
@@ -64,7 +64,7 @@ def test_fingerprint_optional(httpserver, localhost_cert, caplog) -> None:
     fingerprint = binascii.hexlify(digest, ":").decode("ascii")
 
     # when:
-    client.http_request("GET", httpserver.url_for("/"), retries=False)
+    client.http_request("GET", httpserver.url_for("/"))
 
     # then:
     print(f"expected fingerprint: {fingerprint}")
