@@ -122,6 +122,34 @@ def test_login_logout(httpserver) -> None:
         httpserver.check()
 
 
+def test_cookies_not_divulged_to_second_host(httpserver) -> None:
+    # given:
+    httpserver.expect_request("/", method="GET").respond_with_data(
+        "",
+        headers={
+            "Set-Cookie": "for-localhost=1; path=/",
+        },
+    )
+
+    def handler2(request: Request) -> Response:
+        assert request.headers.get("Host") == f"host2.localhost:{httpserver.port}"
+        assert "Cookie" not in request.headers
+
+    httpserver.expect_request("/handler2", method="GET").respond_with_handler(handler2)
+
+    client = Client("localhost", fingerprint="", port=httpserver.port)
+    r1 = client.http_request("GET", httpserver.url_for("/"))
+    assert r1.status == 200
+
+    # when:
+    r2 = client.http_request(
+        "GET", f"https://host2.localhost:{httpserver.port}/handler2"
+    )
+
+    # then:
+    assert r2.status == 200
+
+
 def test_get_data(httpserver) -> None:
     # given:
     httpserver.expect_request("/data/getTuneFreq.asp", method="GET").respond_with_json(
