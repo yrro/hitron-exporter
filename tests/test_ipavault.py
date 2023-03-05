@@ -20,7 +20,7 @@ def test_retrieve_ok(monkeypatch):
     data = ipavault.retrieve(["service", "HTTP/blah.example.com"])
 
     # then:
-    assert data == expected
+    assert json.loads(data) == {"a": 1, "b": 2}
 
 
 def test_vault_retrieve(capsys, monkeypatch):
