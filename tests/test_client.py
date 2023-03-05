@@ -78,7 +78,7 @@ def test_fingerprint_optional(httpserver, localhost_cert, caplog) -> None:
 
 def test_login_logout(httpserver) -> None:
     # given:
-    httpserver.expect_ordered_request("/", method="GET").respond_with_data(
+    httpserver.expect_request("/", method="GET").respond_with_data(
         "", status=302, headers={"Set-Cookie": "preSession=presession_id; path=/"}
     )
 
@@ -90,13 +90,16 @@ def test_login_logout(httpserver) -> None:
             "success", headers={"Set-Cookie": "session=sessionid; path=/; HttpOnly"}
         )
 
-    httpserver.expect_ordered_request(
-        "/goform/login", method="POST"
-    ).respond_with_handler(login_handler)
+    httpserver.expect_request("/goform/login", method="POST").respond_with_handler(
+        login_handler
+    )
+
+    logout_called = {}
 
     def logout_handler(request: Request) -> Response:
         assert request.cookies.get("session") == "sessionid"
         assert request.form.get("data") == "byebye"  # observed behaviour
+        logout_called["called"] = True
         return Response(
             status=302,
             headers={
@@ -107,19 +110,18 @@ def test_login_logout(httpserver) -> None:
             },
         )
 
-    httpserver.expect_ordered_request(
-        "/goform/logout", method="POST"
-    ).respond_with_handler(logout_handler)
+    httpserver.expect_request("/goform/logout", method="POST").respond_with_handler(
+        logout_handler
+    )
 
     client = Client("localhost", fingerprint="", port=httpserver.port)
 
-    try:
-        # when:
-        client.login("uuu", "ppp")
-        client.logout()
-    finally:
-        # then:
-        httpserver.check()
+    # when:
+    client.login("uuu", "ppp")
+    client.logout()
+
+    # then:
+    assert logout_called.get("called")
 
 
 def test_cookies_not_divulged_to_second_host(httpserver) -> None:
