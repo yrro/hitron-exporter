@@ -23,6 +23,7 @@ pytest = "^7.2.1"
 pytest-httpserver = "^1.0.6"
 trustme = "^0.9.0"
 pytest-github-report = "^0.0.1"
+pytest-github-actions-annotate-failures = "^0.1.8"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
