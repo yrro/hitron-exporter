@@ -73,7 +73,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: wheel
-        path: hitron_exporter
+        path: dist
 
     - name: Build image
       uses: redhat-actions/buildah-build@v2

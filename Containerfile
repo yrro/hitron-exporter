@@ -34,16 +34,14 @@ RUN python3 -m venv /opt/app-root/venv \
   && source /opt/app-root/venv/bin/activate \
   && /usr/bin/python3 -m micropipenv install --deploy
 
-COPY hitron_exporter hitron_exporter
+COPY src src
+COPY dist dist
 
 ARG build_wheel=1
 
 RUN \
   set -eux -o pipefail; \
-  if [[ $build_wheel -eq 0 ]]; then \
-    install -d dist; \
-    mv hitron_exporter/*.whl dist/; \
-  else \
+  if [[ $build_wheel -ne 0 ]]; then \
     python3 -m build -w; \
   fi
 
