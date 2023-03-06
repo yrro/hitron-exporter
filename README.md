@@ -355,6 +355,12 @@ or
 $ docker build -t hitron-exporter -f Containerfile .
 ```
 
+Test the container image:
+
+```
+$ poetry run pytest --suite=container
+```
+
 ## Alternatives
 
 [cfstras/hitron-exporter](https://github.com/cfstras/hitron-exporter), is

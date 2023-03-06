@@ -3,6 +3,9 @@ name = "hitron-exporter"
 version = "0.1.0"
 description = "A Prometheus exporter for the Hitron CGN series CPE"
 authors = ["Sam Morris <sam@robots.org.uk>"]
+#packages = [
+#  { include = "hitron_exporter", from = "src" },
+#]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -23,6 +26,7 @@ pytest = "^7.2.1"
 pytest-httpserver = "^1.0.6"
 trustme = "^0.9.0"
 pytest-github-report = "^0.0.1"
+pytest-pilot = "^0.8.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -48,3 +52,8 @@ packages = "hitron_exporter"
 addopts = [
     "--import-mode=importlib",
 ]
+filterwarnings = [
+    # <https://github.com/smarie/python-pytest-pilot/issues/19>
+    "ignore:A private pytest class or function was used:pytest.PytestDeprecationWarning"
+]
+testpaths = ["tests"]
