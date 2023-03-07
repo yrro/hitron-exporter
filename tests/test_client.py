@@ -172,4 +172,4 @@ def test_get_data(httpserver) -> None:
 
     # then:
     httpserver.check()
-    data == [{"tunefreq": "213.45"}]
+    assert data == [{"tunefreq": "213.45"}]
