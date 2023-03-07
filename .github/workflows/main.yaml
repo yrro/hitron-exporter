@@ -8,8 +8,7 @@ on:
 
 jobs:
 
-  wheel:
-    name: Build wheel
+  main:
     runs-on: ubuntu-latest
 
     steps:
@@ -40,57 +39,28 @@ jobs:
       run: poetry install --with=dev
       shell: bash
 
-    - name: Run tests
+    - name: Run unit tests
       run: poetry run pytest --github-report
       shell: bash
-
-    - name: Build wheel
-      run: poetry build -f wheel
-
-    - name: Upload wheel
-      uses: actions/upload-artifact@v3
-      with:
-        name: wheel
-        path:
-          dist/*.whl
-
-  container_image:
-    name: Build container image
-    needs:
-    - wheel
-    runs-on: ubuntu-latest
-    steps:
 
     - name: Record build timestamp
       id: rfc_5322
       run: echo date=$(date -R) >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Download wheel
-      uses: actions/download-artifact@v3
-      with:
-        name: wheel
-        path: dist
-
-    - name: Build image
+    - name: Build container image
       uses: redhat-actions/buildah-build@v2
       with:
-        image: ghcr.io/yrro/hitron-exporter
+        image: localhost/hitron-exporter
         containerfiles: Containerfile
-        build-args: |
-          build_wheel=0
         labels: |
           org.opencontainers.image.created=${{ steps.rfc_5322.outputs.date }}
           org.opencontainers.image.source=${{ github.repositoryUrl }}
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.url=https://github.com/${{ github.repository }}
 
-    - name: Extract version from image
-      id: hitron_version
-      run: echo version=$(podman run --rm --pull=never ghcr.io/yrro/hitron-exporter venv/bin/python -c 'from importlib.metadata import version; print(version("hitron-exporter"))') >> $GITHUB_OUTPUT
+    - name: Run container tests
+      run: poetry run pytest --suite=container --github-report
       shell: bash
 
     - name: Extract base image from image
@@ -110,7 +80,7 @@ jobs:
     - name: Apply additional image labels
       run: |
         buildah config \
-          --label org.opencontainers.image.version=${{ steps.hitron_version.outputs.version }} \
+          --label org.opencontainers.image.version=${{ steps.pep_440.outputs.version }} \
           --label org.opencontainers.image.base.name=${{ steps.image_base_ref.outputs.ref }} \
           --label org.opencontainers.image.base.digest=${{ steps.image_base_digest.outputs.digest }} \
           w

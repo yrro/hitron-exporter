@@ -35,15 +35,8 @@ RUN python3 -m venv /opt/app-root/venv \
   && /usr/bin/python3 -m micropipenv install --deploy
 
 COPY src src
-COPY dist dist
 
-ARG build_wheel=1
-
-RUN \
-  set -eux -o pipefail; \
-  if [[ $build_wheel -ne 0 ]]; then \
-    python3 -m build -w; \
-  fi
+RUN python3 -m build -w
 
 RUN /opt/app-root/venv/bin/python3 -m pip install --no-deps dist/*.whl
 
