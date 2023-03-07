@@ -11,14 +11,14 @@ Credential = TypedDict("Credential", {"usr": str, "pwd": str})
 LOGGER = getLogger(__name__)
 
 
-def retrieve(vault_namespace: Sequence[str]) -> Credential:
+def retrieve(container: Sequence[str]) -> Credential:
     _check_keytab_readable()
 
     kwargs: dict[str, str] = {}
-    if vault_namespace[0] in ["user", "service"]:
-        kwargs[vault_namespace[0]] = vault_namespace[1]
+    if container[0] in ["user", "service"]:
+        kwargs[container[0]] = container[1]
     else:
-        raise ValueError("vault_namespace[0] must be 'user' or 'service'")
+        raise ValueError("container[0] must be 'user' or 'service'")
 
     source = resources.files("hitron_exporter").joinpath("vault-retrieve.py")
     with resources.as_file(source) as vault_retrieve_py:
