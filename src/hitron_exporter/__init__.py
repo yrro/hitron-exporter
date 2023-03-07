@@ -46,9 +46,7 @@ metrics.info(
 def probe() -> ResponseReturnValue:
     args = flask.request.args
 
-    try:
-        target = args["target"]
-    except KeyError:
+    if not (target := args.get("target")):
         return "Missing parameter: 'target'", 400
     kwargs = {}
     if port := args.get("_port"):
