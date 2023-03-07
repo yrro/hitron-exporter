@@ -10,6 +10,13 @@ import pytest
 from hitron_exporter import ipavault
 
 
+def test_retrieve_bad_args():
+    # then:
+    with pytest.raises(ValueError):
+        # when:
+        ipavault.retrieve(["blah"])
+
+
 def test_retrieve_ok(monkeypatch):
     # given:
     expected = json.dumps({"a": 1, "b": 2})
