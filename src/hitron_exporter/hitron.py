@@ -208,8 +208,8 @@ class Client:
         )
         if r.status == 302:
             raise RuntimeError("Not logged in")
-        elif r.status != 200:
-            raise AssertionError("Unexpected data response status: %r", r.status)
+        if r.status != 200:
+            raise AssertionError(f"Unexpected data response status: {r.status!r}")
         if r.headers["Content-Type"] != "application/json":
             raise AssertionError(
                 f"Unexpected data response content-type: {r.headers['Content-Type']!r}"
