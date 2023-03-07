@@ -173,7 +173,6 @@ class Client:
             "GET",
             self.__base_url,
         )
-        assert r.status == 302
 
         try:
             presession_cookie = next(
@@ -192,7 +191,8 @@ class Client:
                 presession_cookie.name: presession_cookie.value,
             },
         )
-        assert r.status == 200
+        if r.status != 200:
+            raise AssertionError(f"Unexpected login response status: {r.status!r}")
 
         # If another session is active then the response data will be b"Repeat Login"
         if r.data != b"success":
@@ -208,8 +208,12 @@ class Client:
         )
         if r.status == 302:
             raise RuntimeError("Not logged in")
-        assert r.status == 200
-        assert r.headers["Content-Type"] == "application/json"
+        elif r.status != 200:
+            raise AssertionError("Unexpected data response status: %r", r.status)
+        if r.headers["Content-Type"] != "application/json":
+            raise AssertionError(
+                f"Unexpected data response content-type: {r.headers['Content-Type']!r}"
+            )
         return json.loads(r.data)
 
     def logout(self) -> None:
@@ -218,7 +222,8 @@ class Client:
             urljoin(self.__base_url, "goform/logout"),
             fields={"data": "byebye"},
         )
-        assert r.status == 302
+        if r.status != 302:
+            raise AssertionError(f"Unexpected logout response status: {r.status!r}")
 
 
 def _get_server_certificate_fingerprint(
@@ -232,9 +237,10 @@ def _get_server_certificate_fingerprint(
     with socket.create_connection(addr, timeout=timeout) as sock:
         with ssl_context.wrap_socket(sock) as sslsock:
             crt = sslsock.getpeercert(binary_form=True)
-            assert crt, (
-                "for a client SSL socket, the server will always provide a certificate,"
-                " regardless of whether validation was required"
-            )
+            if not crt:
+                raise AssertionError(
+                    "for a client SSL socket, the server will always provide a"
+                    " certificate, regardless of whether validation was required"
+                )
             digest = hashlib.sha256(crt).digest()
             return binascii.hexlify(digest, ":").decode("ascii")
