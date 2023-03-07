@@ -231,8 +231,18 @@ def hitron_server(httpserver):
     for name, payload in data.items():
 
         def make_data_handler(name, payload):
+            """
+            Binds name, payload to the values that they were when make_data_handler is
+            called. "This happens because [name, payload are] not local to
+            [data_handler], but [are] defined in the outer scope, and [they are]
+            accessed when [data_handler] is called — not when it is defined." and "In
+            order to avoid this, you need to save the values in variables local to
+            [make_data_handler], so that they don’t rely on the value of the [variables
+            within the outer scope]". Explanation adapted from:
+            <https://docs.python.org/3/faq/programming.html#why-do-lambdas-defined-in-a-loop-with-different-values-all-return-the-same-result>
+            """
+
             def data_handler(request: Request) -> Response:
-                logger.debug("%r ... %r ... %r", request.path, name, payload)
                 assert request.cookies.get("session") == "sessionid"
                 return Response(json.dumps(payload), content_type="application/json")
 
