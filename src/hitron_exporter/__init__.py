@@ -138,19 +138,24 @@ class Collector(prometheus_client.registry.Collector):
         yield dsinfo_sigstr
         yield dsinfo_snr
 
-    def collect_uptime(self) -> Iterator[CounterMetricFamily]:
-        if m := re.match(
-            r"(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds",
-            self.__sysinfo[0]["systemUptime"],
-        ):
+    @staticmethod
+    def parse_uptime(uptime: str) -> Optional[float]:
+        if m := re.match(r"(\d+) Days,(\d+) Hours,(\d+) Minutes,(\d+) Seconds", uptime):
             td = datetime.timedelta(
                 days=int(m.group(1)),
                 hours=int(m.group(2)),
                 minutes=int(m.group(3)),
                 seconds=int(m.group(4)),
             )
+            return td.total_seconds()
+
+        LOGGER.error("Unable to parse systemUptime: %s", uptime)
+        return None
+
+    def collect_uptime(self) -> Iterator[CounterMetricFamily]:
+        if uptime := self.parse_uptime(self.__sysinfo[0]["systemUptime"]):
             yield CounterMetricFamily(
-                "hitron_system_uptime_seconds_total", "", value=td.total_seconds()
+                "hitron_system_uptime_seconds_total", "", value=uptime
             )
 
     def collect_clock(self) -> Iterator[GaugeMetricFamily]:
@@ -174,7 +179,7 @@ class Collector(prometheus_client.registry.Collector):
                 )
             )
         except ValueError as e:
-            LOGGER.exception("Unable to parse systemTime: %s", e)
+            LOGGER.error("Unable to parse systemTime: %s", e)
             return None
 
     def collect_network(self) -> Iterator[CounterMetricFamily]:

@@ -200,10 +200,22 @@ def test_metrics_system_clock(metrics):
     [
         ("Fri Jun 17, 2022, 17:09:10", 1655485750.0),
         ("Tue Feb 01, 2011, 16:12:05", 1296576725.0),
+        ("Not a date", None),
     ],
 )
 def test_parse_clock(input_, expected):
     assert Collector.parse_clock(input_) == expected
+
+
+@pytest.mark.parametrize(
+    "input_,expected",
+    [
+        ("17 Days,13 Hours,11 Minutes,7 Seconds", 1516267.0),
+        ("Unparsable string", None),
+    ],
+)
+def test_parse_uptime(input_, expected):
+    assert Collector.parse_uptime(input_) == expected
 
 
 def test_metrics_network_transmit(metrics):
@@ -233,6 +245,8 @@ def test_metrics_network_recieve(metrics):
         ("234K Bytes", 234000),
         ("345M Bytes", 345000000),
         ("456G Bytes", 456000000000),
+        ("567T Bytes", None),  # unknown pkt factor
+        ("13 not matching string", None),
     ],
 )
 def test_parse_pkt(input_, expected):
