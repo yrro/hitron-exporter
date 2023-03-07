@@ -1134,6 +1134,18 @@ files = [
 Werkzeug = ">=2.0.0"
 
 [[package]]
+name = "pytest-pilot"
+version = "0.8.0"
+description = "Slice in your test base thanks to powerful markers."
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pytest-pilot-0.8.0.tar.gz", hash = "sha256:ebd654c02ccf6db4ae982896a74536a025819479a77049c8815f9a712499eb96"},
+    {file = "pytest_pilot-0.8.0-py2.py3-none-any.whl", hash = "sha256:9a420a2a3ca111c1a7bc8ba68762d2f91282a483805ffdbceb1e8c5b8eacdc95"},
+]
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -1609,4 +1621,4 @@ container = ["gunicorn", "setproctitle"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8496bfe3a574b3d673504d5e33b07553ffa68d008e506a7407be9a79ddc784c4"
+content-hash = "a9f366a666353e42b63ebcc4729cb3ee9ee78bd94330ff3feb277536f4f63d0c"

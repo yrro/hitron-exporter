@@ -50,7 +50,10 @@ def probe() -> ResponseReturnValue:
         target = args["target"]
     except KeyError:
         return "Missing parameter: 'target'", 400
-    client = hitron.Client(target, args.get("fingerprint"))
+    kwargs = {}
+    if port := args.get("_port"):
+        kwargs["port"] = int(port)
+    client = hitron.Client(target, args.get("fingerprint"), **kwargs)
 
     force = bool(int(args.get("force", "0")))
 

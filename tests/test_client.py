@@ -41,12 +41,15 @@ def test_fingerprint_checked(httpserver, localhost_cert) -> None:
         port=httpserver.port,
     )
 
-    # then
+    # then:
     with pytest.raises(
         urllib3.exceptions.SSLError, match="Fingerprints did not match."
     ):
         # when
         client.http_request("GET", httpserver.url_for("/"))
+
+    # then:
+    httpserver.check()
 
 
 @pytest.mark.filterwarnings("ignore::urllib3.connectionpool.InsecureRequestWarning")
@@ -63,11 +66,13 @@ def test_fingerprint_optional(httpserver, localhost_cert, caplog) -> None:
     digest = hashlib.sha256(cert_der).digest()
     fingerprint = binascii.hexlify(digest, ":").decode("ascii")
 
+    httpserver.expect_request("/", method="GET").respond_with_data("")
+
     # when:
     client.http_request("GET", httpserver.url_for("/"))
 
     # then:
-    print(f"expected fingerprint: {fingerprint}")
+    httpserver.check()
     expected_messages = (
         rec
         for rec in caplog.records
@@ -121,6 +126,7 @@ def test_login_logout(httpserver) -> None:
     client.logout()
 
     # then:
+    httpserver.check()
     assert logout_called.get("called")
 
 
@@ -149,6 +155,7 @@ def test_cookies_not_divulged_to_second_host(httpserver) -> None:
     )
 
     # then:
+    httpserver.check()
     assert r2.status == 200
 
 
@@ -164,4 +171,5 @@ def test_get_data(httpserver) -> None:
     data = client.get_data(Client.Dataset.TUNEFREQ)
 
     # then:
+    httpserver.check()
     data == [{"tunefreq": "213.45"}]
