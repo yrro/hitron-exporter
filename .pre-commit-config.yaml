@@ -72,5 +72,6 @@ repos:
   hooks:
   - id: bandit
     exclude: ^tests/
-    args:
-    - --skip=B404,B607,B603
+    args: ["-c", "pyproject.toml"]
+    additional_dependencies:
+    - bandit[toml]
