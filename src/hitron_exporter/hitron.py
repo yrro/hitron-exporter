@@ -108,13 +108,11 @@ class Client:
         if not fingerprint:
             LOGGER.warning(
                 (
-                    "Communication with <https://%s:%s> is insecure because the"
-                    " expected TLS server certificate fingerprint was not specified."
-                    " The host presented a certificate with the following fingerprint:"
-                    " %r"
+                    "Communication with <%s> is insecure because the expected TLS"
+                    " server certificate fingerprint was not specified. The host"
+                    " presented a certificate with the following fingerprint: %r"
                 ),
-                host,
-                port,
+                self.__base_url,
                 _get_server_certificate_fingerprint((host, port), 5, ssl_context),
             )
 
