@@ -3,8 +3,9 @@ from unittest import mock
 
 import prometheus_client
 
-import hitron_exporter
+import hitron_exporter.flask_app
 import hitron_exporter.hitron
+import hitron_exporter.prometheus
 
 
 @pytest.fixture
@@ -19,7 +20,7 @@ def mock_registry():
 
 @pytest.fixture
 def mock_collector():
-    return mock.create_autospec(hitron_exporter.Collector)
+    return mock.create_autospec(hitron_exporter.prometheus.Collector)
 
 
 @pytest.fixture(autouse=True)
@@ -34,14 +35,14 @@ def mock_app_integrations(monkeypatch, mock_client, mock_registry, mock_collecto
     monkeypatch.setattr("hitron_exporter.ipavault.retrieve", mock_vault_retrieve)
 
     monkeypatch.setattr("prometheus_client.CollectorRegistry", mock_registry)
-    monkeypatch.setattr("hitron_exporter.Collector", mock_collector)
+    monkeypatch.setattr("hitron_exporter.prometheus.Collector", mock_collector)
 
-    return hitron_exporter.app
+    return hitron_exporter.flask_app.create_app()
 
 
 @pytest.fixture
-def flask_client():
-    return hitron_exporter.app.test_client()
+def flask_client(mock_app_integrations):
+    return mock_app_integrations.test_client()
 
 
 def test_metrics(flask_client):

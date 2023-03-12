@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from prometheus_client.samples import Sample
 import pytest
 
-from hitron_exporter import Collector
+from hitron_exporter.prometheus import Collector
 from hitron_exporter.hitron import Client
 
 

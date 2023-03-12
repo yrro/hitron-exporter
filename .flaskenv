@@ -1,1 +1,1 @@
-FLASK_APP=hitron_exporter:app
+FLASK_APP=hitron_exporter.flask_app
