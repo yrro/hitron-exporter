@@ -1439,7 +1439,7 @@ testing-integration = ["build[virtualenv]", "filelock (>=3.4.0)", "jaraco.envs (
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
@@ -1710,4 +1710,4 @@ container = ["gunicorn", "setproctitle"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "a9f366a666353e42b63ebcc4729cb3ee9ee78bd94330ff3feb277536f4f63d0c"
+content-hash = "d92b24b47dd1376d259eddc509584768188b451221d46effb71f23fbfd718705"

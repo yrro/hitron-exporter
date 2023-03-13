@@ -2,6 +2,7 @@ from typing import Optional, TypedDict
 
 import flask
 import prometheus_client
+from dependency_injector import containers, providers
 from flask.typing import ResponseReturnValue
 
 from . import hitron  # noqa: E402
@@ -14,11 +15,28 @@ AppGlobals = TypedDict(
 globals_: AppGlobals = {"ipavault_credentials": None}
 
 
+class Container(
+    containers.DeclarativeContainer
+):  # pylint: disable=too-few-public-methods
+    client_factory = providers.Factory(hitron.Client)
+    make_wsgi_app = providers.Callable(prometheus_client.make_wsgi_app)
+    registry_factory = providers.Factory(prometheus_client.CollectorRegistry)
+    collector_factory = providers.Factory(prometheus.Collector)
+    vault_retrieve = providers.Callable(ipavault.retrieve)
+
+
 def create_app() -> flask.Flask:
-    app = flask.Flask(__name__)
+    container = Container()
+    container.check_dependencies()  # pylint: disable=no-member
+    app = flask.Flask("hitron_exporter")
+    app.container = container  # type: ignore [attr-defined]
     prometheus.metrics.init_app(app)
     app.add_url_rule("/probe", view_func=probe)
     return app
+
+
+def container() -> Container:
+    return flask.current_app.container  # type: ignore [attr-defined, no-any-return]
 
 
 def probe() -> ResponseReturnValue:
@@ -29,7 +47,9 @@ def probe() -> ResponseReturnValue:
     client_kwargs = {}
     if port := args.get("_port"):
         client_kwargs["port"] = int(port)
-    client = hitron.Client(target, args.get("fingerprint"), **client_kwargs)
+    client = container().client_factory(
+        target, args.get("fingerprint"), **client_kwargs
+    )
 
     force = bool(int(args.get("force", "0")))
 
@@ -38,7 +58,7 @@ def probe() -> ResponseReturnValue:
     elif args.get("ipa_vault_namespace"):
         creds = globals_["ipavault_credentials"]
         if creds is None:
-            creds = ipavault.retrieve(args["ipa_vault_namespace"].split(":"))
+            creds = container().vault_retrieve(args["ipa_vault_namespace"].split(":"))
 
         if creds is not None:
             try:
@@ -52,8 +72,11 @@ def probe() -> ResponseReturnValue:
         return "Missing parameters: 'usr', 'pwd' or 'ipa_vault_namespace'", 400
 
     try:
-        reg = prometheus_client.CollectorRegistry()
-        reg.register(prometheus.Collector(client))
-        return prometheus_client.make_wsgi_app(reg)
+        col = container().collector_factory(client)
     finally:
         client.logout()
+
+    reg = Container.get().registry_factory()
+    reg.register(col)
+    wsgi_app: ResponseReturnValue = container().make_wsgi_app(reg)
+    return wsgi_app

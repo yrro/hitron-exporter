@@ -15,6 +15,7 @@ gunicorn = {version = "^20.1.0", optional = true}
 setproctitle = {version = "^1.2.3", optional = true}
 urllib3 = "^1.26.14"
 prometheus-flask-exporter = "^0.22.3"
+dependency-injector = "^4.41.0"
 
 [tool.poetry.group.dev.dependencies]
 httpie = "^3.2.1"
@@ -62,3 +63,6 @@ testpaths = ["tests"]
 [tool.bandit]
 targets = ["src"]
 skips = ["B404", "B607", "B603"]
+
+[tool.pylint.'MESSAGES CONTROL']
+extension-pkg-allow-list = "dependency_injector"
