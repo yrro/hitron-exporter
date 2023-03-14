@@ -24,6 +24,10 @@ class Container(
     collector_factory = providers.Factory(prometheus.Collector)
     vault_retrieve = providers.Callable(ipavault.retrieve)
 
+    @staticmethod
+    def get() -> "Container":  # typing.Self in Python 3.11
+        return flask.current_app.container  # type: ignore [attr-defined, no-any-return]
+
 
 def create_app() -> flask.Flask:
     container = Container()
@@ -35,10 +39,6 @@ def create_app() -> flask.Flask:
     return app
 
 
-def container() -> Container:
-    return flask.current_app.container  # type: ignore [attr-defined, no-any-return]
-
-
 def probe() -> ResponseReturnValue:
     args = flask.request.args
 
@@ -47,7 +47,7 @@ def probe() -> ResponseReturnValue:
     client_kwargs = {}
     if port := args.get("_port"):
         client_kwargs["port"] = int(port)
-    client = container().client_factory(
+    client = Container.get().client_factory(
         target, args.get("fingerprint"), **client_kwargs
     )
 
@@ -58,7 +58,9 @@ def probe() -> ResponseReturnValue:
     elif args.get("ipa_vault_namespace"):
         creds = globals_["ipavault_credentials"]
         if creds is None:
-            creds = container().vault_retrieve(args["ipa_vault_namespace"].split(":"))
+            creds = Container.get().vault_retrieve(
+                args["ipa_vault_namespace"].split(":")
+            )
 
         if creds is not None:
             try:
@@ -72,11 +74,11 @@ def probe() -> ResponseReturnValue:
         return "Missing parameters: 'usr', 'pwd' or 'ipa_vault_namespace'", 400
 
     try:
-        col = container().collector_factory(client)
+        col = Container.get().collector_factory(client)
     finally:
         client.logout()
 
     reg = Container.get().registry_factory()
     reg.register(col)
-    wsgi_app: ResponseReturnValue = container().make_wsgi_app(reg)
+    wsgi_app: ResponseReturnValue = Container.get().make_wsgi_app(reg)
     return wsgi_app
