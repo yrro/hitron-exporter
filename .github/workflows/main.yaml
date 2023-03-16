@@ -74,7 +74,7 @@ jobs:
       shell: bash
 
     - name: Create working container
-      run: buildah from --pull=false --name=w ghcr.io/yrro/hitron-exporter
+      run: buildah from --pull=never --name=w ghcr.io/yrro/hitron-exporter
       shell: bash
 
     - name: Apply additional image labels
