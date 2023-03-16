@@ -65,7 +65,7 @@ jobs:
 
     - name: Extract base image from image
       id: image_base_ref
-      run: echo ref=$(buildah inspect --type=image ghcr.io/yrro/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_OUTPUT
+      run: echo ref=$(buildah inspect --type=image localhost/hitron-exporter | jq '[.History[] | select((.comment // "") | startswith("FROM "))] | first | .comment[5:]' -r) >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Extract digest from base image
@@ -74,7 +74,7 @@ jobs:
       shell: bash
 
     - name: Create working container
-      run: buildah from --pull=never --name=w ghcr.io/yrro/hitron-exporter
+      run: buildah from --pull=false --name=w localhost/hitron-exporter # github's image's buildah is too old to support --pull=never; regardless the use of localhost will also prevent pulling
       shell: bash
 
     - name: Apply additional image labels
@@ -93,8 +93,7 @@ jobs:
     - name: Push image
       uses: redhat-actions/push-to-registry@v2
       with:
-        image: ghcr.io/yrro/hitron-exporter
-        registry: ghcr.io
+        tags: ghcr.io/yrro/hitron-exporter:latest
         username: _ignored_
         password: ${{ secrets.GITHUB_TOKEN }}
       if: github.event_name == 'push' && github.ref == 'refs/heads/master' # NOT a security check!
