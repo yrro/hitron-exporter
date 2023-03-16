@@ -23,7 +23,7 @@ def retrieve(container: Sequence[str]) -> Credential:
     source = resources.files("hitron_exporter").joinpath("vault-retrieve.py")
     with resources.as_file(source) as vault_retrieve_py:
         input_ = json.dumps(kwargs)
-        LOGGER.debug("Launching vault-retrieve.py with input: %r", input)
+        LOGGER.debug("Launching vault-retrieve.py with input: %r", input_)
         proc = subprocess.run(
             ["ipa", "console", str(vault_retrieve_py)],
             input=input_,
