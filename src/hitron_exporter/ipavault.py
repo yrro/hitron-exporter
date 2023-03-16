@@ -26,6 +26,7 @@ def retrieve(container: Sequence[str]) -> Credential:
         LOGGER.debug("Launching vault-retrieve.py with input: %r", input_)
         proc = subprocess.run(
             ["ipa", "console", str(vault_retrieve_py)],
+            text=True,
             input=input_,
             stdout=subprocess.PIPE,
             check=True,
