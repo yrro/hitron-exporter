@@ -27,7 +27,10 @@ def ca():
 def hitron_cert(ca):
     # The real web server's TLS server certificate has no Subject Alternative Name
     # values, and a subject of:
-    # CN=02:00:00:00:00:00,OU=No. 40\, Wu-kung 5th Rd.\, Wu-ku\, Taipei Hsien\, Taiwan,O=Hitron Technologies,C=TW
+    # CN=02:00:00:00:00:00,
+    # OU=No. 40\, Wu-kung 5th Rd.\, Wu-ku\, Taipei Hsien\, Taiwan,
+    # O=Hitron Technologies,
+    # C=TW
     return ca.issue_cert(common_name="02:00:00:00:00:00")
 
 

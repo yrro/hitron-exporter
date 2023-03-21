@@ -16,12 +16,6 @@ repos:
   - id: black
     args:
     - --preview
-- repo: https://github.com/PyCQA/flake8
-  rev: 6.0.0
-  hooks:
-  - id: flake8
-    additional_dependencies:
-    - Flake8-pyproject
 - repo: local
   hooks:
   - id: safety-check
@@ -75,3 +69,11 @@ repos:
     args: ["-c", "pyproject.toml"]
     additional_dependencies:
     - bandit[toml]
+- repo: https://github.com/charliermarsh/ruff-pre-commit
+  # Ruff version.
+  rev: 'v0.0.257'
+  hooks:
+  - id: ruff
+    args:
+    - --fix
+    - --exit-non-zero-on-fix
