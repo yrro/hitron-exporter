@@ -42,7 +42,7 @@ def httpserver_ssl_context(hitron_cert):
 
 def image_default_args(image: str) -> str:
     p0 = subprocess.run(
-        ["podman", "image", "inspect", "hitron-exporter"],
+        ["podman", "image", "inspect", "localhost/hitron-exporter"],
         stdout=subprocess.PIPE,
         text=True,
     )
