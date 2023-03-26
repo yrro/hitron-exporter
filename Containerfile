@@ -92,7 +92,7 @@ ENV \
 
 CMD [ \
   "/opt/app-root/venv/bin/gunicorn", \
-  "hitron_exporter:app" \
+  "hitron_exporter.flask_app:create_app()" \
 ]
 
 EXPOSE 9938
